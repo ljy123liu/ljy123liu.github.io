@@ -50,28 +50,31 @@
   };
 </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="LY Blog">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;index.html">
+  <meta name="description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。 准备">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM系列(二)：JVM 类加载机制">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2015&#x2F;01&#x2F;19&#x2F;JVM&#x2F;JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
+<meta property="og:description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。 准备">
 <meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2019-10-26T14:40:45.582Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/">
+<link rel="canonical" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false,
+    isHome: false,
+    isPost: true,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>LY Blog</title>
+  <title>JVM系列(二)：JVM 类加载机制 | LY Blog</title>
   
 
 
@@ -176,165 +179,10 @@
             
 
   <div class="posts-expand">
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/" class="post-title-link" itemprop="url">JVM系列(三)：JVM中有哪些内存区域，分别都是用来干嘛的？</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-22 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-22T00:34:14+08:00">2015-01-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/JVM/" itemprop="url" rel="index">
-                    <span itemprop="name">JVM</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
       
-          <h4 id="到底什么是JVM的内存区域划分"><a href="#到底什么是JVM的内存区域划分" class="headerlink" title="到底什么是JVM的内存区域划分"></a>到底什么是JVM的内存区域划分</h4><ul>
-<li>那么运行方法的时候，方法里面有很多变量之类的东西，是不是需要放在某个内存区域里？</li>
-<li>接着如果我们写的代码里创建一些对象，这些对象是不是也需要内存空间来存放？</li>
-<li>这就是为什么JVM中必须划分出来不同的内存区域，它是为了我们写好的代码在运行过程中根据需要来使用的。<br><img src="https://mubu.com/document_image/b7b54e87-506a-46e1-bede-55845919dc71-4276170.jpg" alt="avatar"><h4 id="存放类的方法区"><a href="#存放类的方法区" class="headerlink" title="存放类的方法区"></a>存放类的方法区</h4></li>
-<li>主要是放从“.class”文件里加载进来的类，还会有一些类似常量池的东西放在这个区域里。<h4 id="执行代码指令用的程序计数器"><a href="#执行代码指令用的程序计数器" class="headerlink" title="执行代码指令用的程序计数器"></a>执行代码指令用的程序计数器</h4></li>
-<li>我们写好的Java代码（.java）会被翻译成字节码(.class)，对应各种字节码指令</li>
-<li>字节码指令一定会被一条一条执行，这样才能实现我们写好的代码执行的效果</li>
-<li>那么在执行字节码指令的时候，JVM里就需要一个特殊的内存区域了，那就是“程序计数器”</li>
-<li>大家都知道JVM是支持多个线程的，所以其实你写好的代码可能会开启多个线程并发执行不同的代码，所以就会有多个线程来并发的执行不同的代码指令</li>
-<li>因此每个线程都会有自己的一个程序计数器，专门记录当前这个线程目前执行到了哪一条字节码指令了<br><img src="https://mubu.com/document_image/91747429-c1c5-4fe2-95b7-6b8ae9d04571-4276170.jpg" alt="avatar"><h4 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h4></li>
-<li>因此，JVM必须有一块区域是来保存每个方法内的局部变量等数据的，这个区域就是Java虚拟机栈</li>
-<li>每个线程都有自己的Java虚拟机栈</li>
-<li>在栈帧里存放了这个方法对应的局部变量之类的数据，包括这个方法执行的其他相关的信息，方法执行完毕之后就出栈。<br><img src="https://mubu.com/document_image/9f97e9a9-24b1-4944-a4af-8fc8e34e8ab6-4276170.jpg" alt="avatar"></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
   
   
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/" class="post-title-link" itemprop="url">JVM系列(一)：Java代码是如何运行起来的</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/JVM/" itemprop="url" rel="index">
-                    <span itemprop="name">JVM</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>编译：“.java”代码打包的过程中，一般就会把代码编译成“.class”后缀的字节码文件，他才是可以被运行起来的</li>
-<li>jvm进程：“java -jar”之类的命令来运行我们写好的代码，一旦采用”java”命令，实际会启动 一个jvm进程来负责运行这些”.class”字节码文件</li>
-<li>类加载器：”.class”字节码文件是我们写好的一个一个类，此时会采用类加载器把编译好的那些“.class”字节码文件给加载到JVM中，然后供后续代码运行来使用。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -348,8 +196,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">JVM系列(二)：JVM 类加载机制</a>
+          JVM系列(二)：JVM 类加载机制
         </h1>
 
         <div class="post-meta">
@@ -384,7 +231,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
+        <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
 <li>代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&gt; 验证 -&gt; 准备 -&gt; 解析 -&gt; 初始化 -&gt; 使用 -&gt; 卸载<h4 id="从实用角度出发，来看看验证、准备和初始化的过程"><a href="#从实用角度出发，来看看验证、准备和初始化的过程" class="headerlink" title="从实用角度出发，来看看验证、准备和初始化的过程"></a>从实用角度出发，来看看验证、准备和初始化的过程</h4></li>
 <li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
 <li>准备：<ul>
@@ -431,95 +278,39 @@
 </li>
 </ul>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL/">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2015/01/19/MySQL/MySQL/" rel="next" title="MySQL系列(一)：">
+                  <i class="fa fa-chevron-left"></i> MySQL系列(一)：
+                </a>
+            </div>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/MySQL/MySQL/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
-        </h1>
+            <span class="post-nav-divider"></span>
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>MySQL</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/" rel="prev" title="JVM系列(一)：Java代码是如何运行起来的">
+                  JVM系列(一)：Java代码是如何运行起来的 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
       </footer>
+    
   </article>
   
   
   
 
   </div>
-
-  
-
 
 
           </div>
@@ -548,6 +339,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM在什么情况下会加载一个类？"><span class="nav-number">1.</span> <span class="nav-text">JVM在什么情况下会加载一个类？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#从实用角度出发，来看看验证、准备和初始化的过程"><span class="nav-number">2.</span> <span class="nav-text">从实用角度出发，来看看验证、准备和初始化的过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#核心阶段：初始化"><span class="nav-number">3.</span> <span class="nav-text">核心阶段：初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#类加载器和双亲委派机制"><span class="nav-number">4.</span> <span class="nav-text">类加载器和双亲委派机制</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
