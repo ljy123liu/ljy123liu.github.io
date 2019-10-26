@@ -50,14 +50,19 @@
   };
 </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="LY Blog">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;archives&#x2F;index.html">
+  <meta name="description" content="到底什么是JVM的内存区域划分 那么运行方法的时候，方法里面有很多变量之类的东西，是不是需要放在某个内存区域里？ 接着如果我们写的代码里创建一些对象，这些对象是不是也需要内存空间来存放？ 这就是为什么JVM中必须划分出来不同的内存区域，它是为了我们写好的代码在运行过程中根据需要来使用的。存放类的方法区 主要是放从“.class”文件里加载进来的类，还会有一些类似常量池的东西放在这个区域里。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM系列(三)：JVM 类加载机制">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2015&#x2F;01&#x2F;22&#x2F;JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
+<meta property="og:description" content="到底什么是JVM的内存区域划分 那么运行方法的时候，方法里面有很多变量之类的东西，是不是需要放在某个内存区域里？ 接着如果我们写的代码里创建一些对象，这些对象是不是也需要内存空间来存放？ 这就是为什么JVM中必须划分出来不同的内存区域，它是为了我们写好的代码在运行过程中根据需要来使用的。存放类的方法区 主要是放从“.class”文件里加载进来的类，还会有一些类似常量池的东西放在这个区域里。">
 <meta property="og:locale" content="zh">
+<meta property="og:image" content="https:&#x2F;&#x2F;mubu.com&#x2F;document_image&#x2F;b7b54e87-506a-46e1-bede-55845919dc71-4276170.jpg">
+<meta property="og:updated_time" content="2019-10-26T02:06:15.270Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;mubu.com&#x2F;document_image&#x2F;b7b54e87-506a-46e1-bede-55845919dc71-4276170.jpg">
 
-<link rel="canonical" href="http://yoursite.com/archives/">
+<link rel="canonical" href="http://yoursite.com/2015/01/22/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/">
 
 
 <script id="page-configurations">
@@ -65,13 +70,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
+    isPost: true,
     isPage: false,
-    isArchive: true
+    isArchive: false
   };
 </script>
 
-  <title>Archive | LY Blog</title>
+  <title>JVM系列(三)：JVM 类加载机制 | LY Blog</title>
   
 
 
@@ -170,89 +175,85 @@
           <div class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">Um..! 3 posts in total. Keep on posting.</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/22/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM系列(三)：JVM 类加载机制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-01-22 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-22T00:34:14+08:00">2015-01-22</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <h1 class="collection-header">2015</h1>
-    </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2015-01-22T00:34:14+08:00"
-              content="2015-01-22">
-          01-22
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2015/01/22/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/" itemprop="url">
-            <span itemprop="name">JVM系列(三)：JVM 类加载机制</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2015-01-19T00:34:14+08:00"
-              content="2015-01-19">
-          01-19
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2015/01/19/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/" itemprop="url">
-            <span itemprop="name">JVM系列(一)：Java代码是如何运行起来的</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2015-01-19T00:34:14+08:00"
-              content="2015-01-19">
-          01-19
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2015/01/19/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" itemprop="url">
-            <span itemprop="name">JVM系列(二)：JVM 类加载机制</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
+        <h4 id="到底什么是JVM的内存区域划分"><a href="#到底什么是JVM的内存区域划分" class="headerlink" title="到底什么是JVM的内存区域划分"></a>到底什么是JVM的内存区域划分</h4><ul>
+<li>那么运行方法的时候，方法里面有很多变量之类的东西，是不是需要放在某个内存区域里？</li>
+<li>接着如果我们写的代码里创建一些对象，这些对象是不是也需要内存空间来存放？</li>
+<li>这就是为什么JVM中必须划分出来不同的内存区域，它是为了我们写好的代码在运行过程中根据需要来使用的。<br><img src="https://mubu.com/document_image/b7b54e87-506a-46e1-bede-55845919dc71-4276170.jpg" alt="avatar"><h4 id="存放类的方法区"><a href="#存放类的方法区" class="headerlink" title="存放类的方法区"></a>存放类的方法区</h4></li>
+<li>主要是放从“.class”文件里加载进来的类，还会有一些类似常量池的东西放在这个区域里。</li>
+</ul>
 
     </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2015/01/19/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/" rel="next" title="JVM系列(一)：Java代码是如何运行起来的">
+                  <i class="fa fa-chevron-left"></i> JVM系列(一)：Java代码是如何运行起来的
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
@@ -281,6 +282,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#到底什么是JVM的内存区域划分"><span class="nav-number">1.</span> <span class="nav-text">到底什么是JVM的内存区域划分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#存放类的方法区"><span class="nav-number">2.</span> <span class="nav-text">存放类的方法区</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
