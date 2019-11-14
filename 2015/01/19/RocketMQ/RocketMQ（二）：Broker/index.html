@@ -50,17 +50,20 @@
   };
 </script>
 
-  <meta name="description" content="MySQL">
+  <meta name="description" content="Master Broker是如何将消息同步给Slave Broker的？ 为了保证MQ的数据不丢失而且具备一定的高可用性，所以一般都是得将Broker部署成Master-Slave模式的，也就是一个Master Broker对应一个Slave Broker。然后Master需要在接收到消息之后，将数据同步给Slave，这样一旦Master Broker挂了，还有Slave上有一份数据。 Rock">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL系列(一)：">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2015&#x2F;01&#x2F;19&#x2F;MySQL&#x2F;MySQL&#x2F;index.html">
+<meta property="og:title" content="RocketMQ（二）：Broker的主从架构原理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2015&#x2F;01&#x2F;19&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9ABroker&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
-<meta property="og:description" content="MySQL">
+<meta property="og:description" content="Master Broker是如何将消息同步给Slave Broker的？ 为了保证MQ的数据不丢失而且具备一定的高可用性，所以一般都是得将Broker部署成Master-Slave模式的，也就是一个Master Broker对应一个Slave Broker。然后Master需要在接收到消息之后，将数据同步给Slave，这样一旦Master Broker挂了，还有Slave上有一份数据。 Rock">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-10-26T14:43:11.874Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;11&#x2F;13&#x2F;MYnnoV.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;11&#x2F;13&#x2F;MYMNoq.png">
+<meta property="og:updated_time" content="2019-11-13T14:17:44.678Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;11&#x2F;13&#x2F;MYnnoV.png">
 
-<link rel="canonical" href="http://yoursite.com/2015/01/19/MySQL/MySQL/">
+<link rel="canonical" href="http://yoursite.com/2015/01/19/RocketMQ/RocketMQ%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9ABroker/">
 
 
 <script id="page-configurations">
@@ -74,7 +77,7 @@
   };
 </script>
 
-  <title>MySQL系列(一)： | LY Blog</title>
+  <title>RocketMQ（二）：Broker的主从架构原理 | LY Blog</title>
   
 
 
@@ -183,7 +186,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/RocketMQ/RocketMQ%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9ABroker/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -196,7 +199,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          MySQL系列(一)：
+          RocketMQ（二）：Broker的主从架构原理
         </h1>
 
         <div class="post-meta">
@@ -214,8 +217,8 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
                   </a>
                 </span>
             </span>
@@ -232,7 +235,31 @@
 
       
         <ul>
-<li>MySQL</li>
+<li><h4 id="Master-Broker是如何将消息同步给Slave-Broker的？"><a href="#Master-Broker是如何将消息同步给Slave-Broker的？" class="headerlink" title="Master Broker是如何将消息同步给Slave Broker的？"></a>Master Broker是如何将消息同步给Slave Broker的？</h4><ul>
+<li>为了保证MQ的数据不丢失而且具备一定的高可用性，所以一般都是得将Broker部署成Master-Slave模式的，也就是一个Master Broker对应一个Slave Broker。然后Master需要在接收到消息之后，将数据同步给Slave，这样一旦Master Broker挂了，还有Slave上有一份数据。</li>
+<li>RocketMQ的Master-Slave模式采取的是Slave Broker不停的发送请求到Master Broker去拉取消息。<br><img src="https://s2.ax1x.com/2019/11/13/MYnnoV.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="RocketMQ-实现读写分离了吗？"><a href="#RocketMQ-实现读写分离了吗？" class="headerlink" title="RocketMQ 实现读写分离了吗？"></a>RocketMQ 实现读写分离了吗？</h4><ul>
+<li>有可能从Master Broker获取消息，也有可能从Slave Broker获取消息。</li>
+<li>作为消费者的系统在获取消息的时候会先发送请求到Master Broker上去，请求获取一批消息，此时Master Broker是会返回一批消息给消费者系统的。然后Master Broker在返回消息给消费者系统的时候，会根据当时Master Broker的负载情况和Slave Broker的同步情况，向消费者系统建议下一次拉取消息的时候是从Master Broker拉取还是从Slave Broker拉取。</li>
+</ul>
+</li>
+<li><h4 id="如果Slave-Broke挂掉了有什么影响？"><a href="#如果Slave-Broke挂掉了有什么影响？" class="headerlink" title="如果Slave Broke挂掉了有什么影响？"></a>如果Slave Broke挂掉了有什么影响？</h4><ul>
+<li>因为消息写入全部是发送到Master Broker的，然后消息获取也可以走Master Broker，只不过有一些消息获取可能是从Slave Broker去走的。所以如果Slave Broker挂了，那么此时无论消息写入还是消息拉取，还是可以继续从Master Broke去走，对整体运行不影响。</li>
+</ul>
+</li>
+<li><h4 id="如果Master-Broker挂掉了该怎么办？"><a href="#如果Master-Broker挂掉了该怎么办？" class="headerlink" title="如果Master Broker挂掉了该怎么办？"></a>如果Master Broker挂掉了该怎么办？</h4><ul>
+<li>RocketMQ 4.5版本之前，都是用Slave Broker同步数据，尽量保证数据不丢失，但是一旦Master故障了，Slave是没法自动切换成Master的。</li>
+<li>如果Master Broker宕机了，这时就得手动做一些运维操作，把Slave Broker重新修改一些配置，重启机器给调整为Master Broker。</li>
+<li>Master-Slave模式不是彻底的高可用模式，他没法实现自动把Slave切换为Master</li>
+</ul>
+</li>
+<li><h4 id="基于Dledger实现RocketMQ高可用自动切换（RocketMQ-4-5之后）"><a href="#基于Dledger实现RocketMQ高可用自动切换（RocketMQ-4-5之后）" class="headerlink" title="基于Dledger实现RocketMQ高可用自动切换（RocketMQ 4.5之后）"></a>基于Dledger实现RocketMQ高可用自动切换（RocketMQ 4.5之后）</h4><ul>
+<li>把Dledger融入RocketMQ之后，就可以让一个Master Broker对应多个Slave Broker，也就是说一份数据可以有多份副本，比如一个Master Broker对应两个Slave Broker。</li>
+<li>Master Broker宕机了，就可以在多个副本，也就是多个Slave中，通过Dledger技术和Raft协议算法进行leader选举，直接将一个Slave Broker选举为新的Master Broker，然后这个新的Master Broker就可以对外提供服务了。<br><img src="https://s2.ax1x.com/2019/11/13/MYMNoq.png" alt="avatar"></li>
+</ul>
+</li>
 </ul>
 
     </div>
@@ -247,16 +274,16 @@
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2015/01/19/RocketMQ/RocketMQ%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9ABroker/" rel="next" title="RocketMQ（二）：Broker的主从架构原理">
-                  <i class="fa fa-chevron-left"></i> RocketMQ（二）：Broker的主从架构原理
+                <a href="/2015/01/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ANameServer/" rel="next" title="RocketMQ（一）：NameServer">
+                  <i class="fa fa-chevron-left"></i> RocketMQ（一）：NameServer
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2015/01/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/" rel="prev" title="RocketMQ（三）：高可用的消息中间件生产部署架构">
-                  RocketMQ（三）：高可用的消息中间件生产部署架构 <i class="fa fa-chevron-right"></i>
+                <a href="/2015/01/19/MySQL/MySQL/" rel="prev" title="MySQL系列(一)：">
+                  MySQL系列(一)： <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -296,6 +323,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Master-Broker是如何将消息同步给Slave-Broker的？"><span class="nav-number">1.</span> <span class="nav-text">Master Broker是如何将消息同步给Slave Broker的？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocketMQ-实现读写分离了吗？"><span class="nav-number">2.</span> <span class="nav-text">RocketMQ 实现读写分离了吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如果Slave-Broke挂掉了有什么影响？"><span class="nav-number">3.</span> <span class="nav-text">如果Slave Broke挂掉了有什么影响？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如果Master-Broker挂掉了该怎么办？"><span class="nav-number">4.</span> <span class="nav-text">如果Master Broker挂掉了该怎么办？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于Dledger实现RocketMQ高可用自动切换（RocketMQ-4-5之后）"><span class="nav-number">5.</span> <span class="nav-text">基于Dledger实现RocketMQ高可用自动切换（RocketMQ 4.5之后）</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
