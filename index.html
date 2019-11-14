@@ -180,6 +180,116 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">RocketMQ（三）：高可用的消息中间件生产部署架构</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-11-11 21:05:24" itemprop="dateCreated datePublished" datetime="2019-11-11T21:05:24+08:00">2019-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="NameServer集群化部署，保证高可用性"><a href="#NameServer集群化部署，保证高可用性" class="headerlink" title="NameServer集群化部署，保证高可用性"></a>NameServer集群化部署，保证高可用性</h4><ul>
+<li>可以部署在三台机器上，这样可以充分保证NameServer作为路由中心的可用性，哪怕是挂掉两台机器，只要有一个NameServer还在运行，就能保证MQ系统的稳定性。</li>
+<li>每台NameServer实际上都会有完整的集群路由信息，包括所有的Broker节点信息，我们的数据信息，等等。所以只要任何一台NameServer存活下来，就可以保证MQ系统正常运行，不会出现故障。</li>
+</ul>
+</li>
+<li><h4 id="基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）"><a href="#基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）" class="headerlink" title="基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）"></a>基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）</h4><ul>
+<li>Dledger技术是要求至少得是一个Master带两个Slave，这样有三个Broke组成一个Group，也就是作为一个分组来运行。一旦Master宕机，他就可以从剩余的两个Slave中选举出来一个新的Master对外提供服务。</li>
+<li>每个Broker（不论是Master和Slave）都会把自己注册到所有的NameServer上去。（* 注：图中没有画出Slave Broker注册到NameServer）<br><img src="https://s2.ax1x.com/2019/11/13/MYQVpT.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="Broker是如何跟NameServer进行通信的？"><a href="#Broker是如何跟NameServer进行通信的？" class="headerlink" title="Broker是如何跟NameServer进行通信的？"></a>Broker是如何跟NameServer进行通信的？</h4><ul>
+<li>Broker会跟每个NameServer都建立一个TCP长连接，然后定时通过TCP长连接发送心跳请求过去。</li>
+<li>各个NameServer就是通过跟Broker建立好的长连接不断收到心跳包，然后定时检查Broker有没有120s都没发送心跳包，来判定集群里各个Broker到底挂掉了没有。</li>
+</ul>
+</li>
+<li><h4 id="使用MQ的系统都要多机器集群部署"><a href="#使用MQ的系统都要多机器集群部署" class="headerlink" title="使用MQ的系统都要多机器集群部署"></a>使用MQ的系统都要多机器集群部署</h4><ul>
+<li>生产者还是消费者的系统，都应该多机器集群化部署，保证他自己本身作为生产者或者消费者的高可用性。</li>
+</ul>
+</li>
+<li><h4 id="MQ的核心数据模型：Topic（数据集合）"><a href="#MQ的核心数据模型：Topic（数据集合）" class="headerlink" title="MQ的核心数据模型：Topic（数据集合）"></a>MQ的核心数据模型：Topic（数据集合）</h4><ul>
+<li>作为数据集合存放不同类型的消息，比如说订单Topic，商品Topic，等等。</li>
+</ul>
+</li>
+<li><h4 id="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"><a href="#Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）" class="headerlink" title="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"></a>Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）</h4><ul>
+<li>创建Topic的时候指定让他里面的数据分散存储在多台Broker机器上，比如一个Topic里有1000万条数据，此时有2台Broker，那么就可以让每台Broker上都放500万条数据。</li>
+<li>每个Broker在进行定时的心跳汇报给NameServer的时候，都会告诉NameServer自己当前的数据情况，比如有哪些Topic的哪些数据在自己这里，这些信息都是属于路由信息的一部分。<br><img src="https://s2.ax1x.com/2019/11/14/MYIJGd.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="生产者系统是如何将消息发送给Broker的？"><a href="#生产者系统是如何将消息发送给Broker的？" class="headerlink" title="生产者系统是如何将消息发送给Broker的？"></a>生产者系统是如何将消息发送给Broker的？</h4><ul>
+<li>在发送消息之前，得先有一个Topic，然后在发送消息的时候，得指定你要发送到哪个Topic里面去。</li>
+<li>跟NameServer建立一个TCP长连接，然后定时从他那里拉取到最新的路由信息，包括集群里有哪些Broker，集群里有哪些Topic，每个Topic都存储在哪些Broker上。</li>
+<li>生产者系统自然就可以通过路由信息找到自己要投递消息的Topic分布在哪几台Broker上，此时可以根据负载均衡算法，从里面选择一台Broke机器出来，比如round robine轮询算法，或者是hash算法，都可以。Broker收到消息之后就会存储在自己本地磁盘里去。</li>
+<li>生产者一定是投递消息到Master Broker的，然后Master Broker会同步数据给他的Slave Brokers，实现一份数据多份副本，保证Master故障的时候数据不丢失，而且可以自动把Slave切换为Master提供服务。<br><img src="https://s2.ax1x.com/2019/11/14/MtfZqO.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="消费者是如何从Broker上拉取消息的？"><a href="#消费者是如何从Broker上拉取消息的？" class="headerlink" title="消费者是如何从Broker上拉取消息的？"></a>消费者是如何从Broker上拉取消息的？</h4><ul>
+<li>消费者系统其实跟生产者系统原理是类似的，他们也会跟NameServer建立长连接，然后拉取路由信息，接着找到自己要获取消息的Topic在哪几台Broker上，就可以跟Broker建立长连接，从里面拉取消息了。</li>
+<li>消费者系统可能会从Master Broker拉取消息，也可能从Slave Broker拉取消息，都有可能。<br><img src="https://s2.ax1x.com/2019/11/14/Mtfzlt.png" alt="avatar"></li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/09/RocketMQ/RocketMQ%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9ABroker/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -373,116 +483,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">RocketMQ（三）：高可用的消息中间件生产部署架构</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-11-11 21:05:24" itemprop="dateCreated datePublished" datetime="2015-11-11T21:05:24+08:00">2015-11-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="NameServer集群化部署，保证高可用性"><a href="#NameServer集群化部署，保证高可用性" class="headerlink" title="NameServer集群化部署，保证高可用性"></a>NameServer集群化部署，保证高可用性</h4><ul>
-<li>可以部署在三台机器上，这样可以充分保证NameServer作为路由中心的可用性，哪怕是挂掉两台机器，只要有一个NameServer还在运行，就能保证MQ系统的稳定性。</li>
-<li>每台NameServer实际上都会有完整的集群路由信息，包括所有的Broker节点信息，我们的数据信息，等等。所以只要任何一台NameServer存活下来，就可以保证MQ系统正常运行，不会出现故障。</li>
-</ul>
-</li>
-<li><h4 id="基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）"><a href="#基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）" class="headerlink" title="基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）"></a>基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）</h4><ul>
-<li>Dledger技术是要求至少得是一个Master带两个Slave，这样有三个Broke组成一个Group，也就是作为一个分组来运行。一旦Master宕机，他就可以从剩余的两个Slave中选举出来一个新的Master对外提供服务。</li>
-<li>每个Broker（不论是Master和Slave）都会把自己注册到所有的NameServer上去。（* 注：图中没有画出Slave Broker注册到NameServer）<br><img src="https://s2.ax1x.com/2019/11/13/MYQVpT.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="Broker是如何跟NameServer进行通信的？"><a href="#Broker是如何跟NameServer进行通信的？" class="headerlink" title="Broker是如何跟NameServer进行通信的？"></a>Broker是如何跟NameServer进行通信的？</h4><ul>
-<li>Broker会跟每个NameServer都建立一个TCP长连接，然后定时通过TCP长连接发送心跳请求过去。</li>
-<li>各个NameServer就是通过跟Broker建立好的长连接不断收到心跳包，然后定时检查Broker有没有120s都没发送心跳包，来判定集群里各个Broker到底挂掉了没有。</li>
-</ul>
-</li>
-<li><h4 id="使用MQ的系统都要多机器集群部署"><a href="#使用MQ的系统都要多机器集群部署" class="headerlink" title="使用MQ的系统都要多机器集群部署"></a>使用MQ的系统都要多机器集群部署</h4><ul>
-<li>生产者还是消费者的系统，都应该多机器集群化部署，保证他自己本身作为生产者或者消费者的高可用性。</li>
-</ul>
-</li>
-<li><h4 id="MQ的核心数据模型：Topic（数据集合）"><a href="#MQ的核心数据模型：Topic（数据集合）" class="headerlink" title="MQ的核心数据模型：Topic（数据集合）"></a>MQ的核心数据模型：Topic（数据集合）</h4><ul>
-<li>作为数据集合存放不同类型的消息，比如说订单Topic，商品Topic，等等。</li>
-</ul>
-</li>
-<li><h4 id="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"><a href="#Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）" class="headerlink" title="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"></a>Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）</h4><ul>
-<li>创建Topic的时候指定让他里面的数据分散存储在多台Broker机器上，比如一个Topic里有1000万条数据，此时有2台Broker，那么就可以让每台Broker上都放500万条数据。</li>
-<li>每个Broker在进行定时的心跳汇报给NameServer的时候，都会告诉NameServer自己当前的数据情况，比如有哪些Topic的哪些数据在自己这里，这些信息都是属于路由信息的一部分。<br><img src="https://s2.ax1x.com/2019/11/14/MYIJGd.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="生产者系统是如何将消息发送给Broker的？"><a href="#生产者系统是如何将消息发送给Broker的？" class="headerlink" title="生产者系统是如何将消息发送给Broker的？"></a>生产者系统是如何将消息发送给Broker的？</h4><ul>
-<li>在发送消息之前，得先有一个Topic，然后在发送消息的时候，得指定你要发送到哪个Topic里面去。</li>
-<li>跟NameServer建立一个TCP长连接，然后定时从他那里拉取到最新的路由信息，包括集群里有哪些Broker，集群里有哪些Topic，每个Topic都存储在哪些Broker上。</li>
-<li>生产者系统自然就可以通过路由信息找到自己要投递消息的Topic分布在哪几台Broker上，此时可以根据负载均衡算法，从里面选择一台Broke机器出来，比如round robine轮询算法，或者是hash算法，都可以。Broker收到消息之后就会存储在自己本地磁盘里去。</li>
-<li>生产者一定是投递消息到Master Broker的，然后Master Broker会同步数据给他的Slave Brokers，实现一份数据多份副本，保证Master故障的时候数据不丢失，而且可以自动把Slave切换为Master提供服务。<br><img src="https://s2.ax1x.com/2019/11/14/MtfZqO.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="消费者是如何从Broker上拉取消息的？"><a href="#消费者是如何从Broker上拉取消息的？" class="headerlink" title="消费者是如何从Broker上拉取消息的？"></a>消费者是如何从Broker上拉取消息的？</h4><ul>
-<li>消费者系统其实跟生产者系统原理是类似的，他们也会跟NameServer建立长连接，然后拉取路由信息，接着找到自己要获取消息的Topic在哪几台Broker上，就可以跟Broker建立长连接，从里面拉取消息了。</li>
-<li>消费者系统可能会从Master Broker拉取消息，也可能从Slave Broker拉取消息，都有可能。<br><img src="https://s2.ax1x.com/2019/11/14/Mtfzlt.png" alt="avatar"></li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -545,77 +545,6 @@
 <li>因此，JVM必须有一块区域是来保存每个方法内的局部变量等数据的，这个区域就是Java虚拟机栈</li>
 <li>每个线程都有自己的Java虚拟机栈</li>
 <li>在栈帧里存放了这个方法对应的局部变量之类的数据，包括这个方法执行的其他相关的信息，方法执行完毕之后就出栈。<br><img src="https://mubu.com/document_image/9f97e9a9-24b1-4944-a4af-8fc8e34e8ab6-4276170.jpg" alt="avatar"></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/MySQL/MySQL/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>MySQL</li>
 </ul>
 
       
@@ -823,7 +752,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -837,7 +766,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">Java核心技术-多线程并发</a>
+            <a href="/2015/01/19/MySQL/MySQL/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
         </h1>
 
         <div class="post-meta">
@@ -855,8 +784,8 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
-                    <span itemprop="name">Java核心技术</span>
+                  <a href="/categories/MySQL/" itemprop="url" rel="index">
+                    <span itemprop="name">MySQL</span>
                   </a>
                 </span>
             </span>
@@ -873,26 +802,7 @@
 
       
           <ul>
-<li><strong>JAVA线程实现/创建方式</strong><ul>
-<li><strong>继承 Thread 类</strong><br>Thread 类本质上是实现了 Runnable 接口的一个实例，代表一个线程的实例。启动线程的唯一方 法就是通过 Thread 类的 start()实例方法。start()方法是一个 native 方法，它将启动一个新线 程，并执行 run()方法。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> public class MyThread extends Thread &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  </span><br><span class="line">    MyThread myThread1 = new MyThread();</span><br><span class="line">    myThread1.start();</span><br></pre></td></tr></table></figure></li>
-<li><strong>实现 Runnable 接口</strong><br>如果自己的类已经 extends 另一个类，就无法直接 extends Thread，此时，可以实现一个 Runnable 接口。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyThread extends OtherClass implements Runnable &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//启动 MyThread，需要首先实例化一个 Thread，并传入自己的 MyThread 实例:</span><br><span class="line">MyThread myThread = new MyThread();</span><br><span class="line">Thread thread = new Thread(myThread);</span><br><span class="line">thread.start();</span><br><span class="line">//事实上，当传入一个 Runnable target 参数给 Thread 后，Thread 的 run()方法就会调用</span><br><span class="line">target.run()</span><br><span class="line">public void run() &#123;</span><br><span class="line">    if (target != null) &#123;</span><br><span class="line">        target.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>ExecutorService、Callable<Class>、Future 有返回值线程</strong><br>有返回值的任务必须实现 Callable 接口，类似的，无返回值的任务必须 Runnable 接口。执行 Callable 任务后，可以获取一个 Future 的对象，在该对象上调用 get 就可以获取到 Callable 任务 返回的 Object 了，再结合线程池接口 ExecutorService 就可以实现传说中有返回结果的多线程 了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> //创建一个线程池</span><br><span class="line">ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">// 创建多个有返回值的任务</span><br><span class="line">List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">for(i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">    Callable c = new MyCallable(i + &quot; &quot;);</span><br><span class="line">     // 执行任务并获取 Future 对象</span><br><span class="line">    Future f = pool.submit(c);</span><br><span class="line">    list.add(f);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭线程池</span><br><span class="line">pool.shutdown();</span><br><span class="line">// 获取所有并发任务的运行结果</span><br><span class="line">for(Future f : list) &#123;</span><br><span class="line">    // 从 Future 对象上获取任务的返回值，并输出到控制台</span><br><span class="line">    System.out.println(&quot;res:&quot;+ f.get().toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>基于线程池的方式</strong><br>线程和数据库连接这些资源都是非常宝贵的资源。那么每次需要的时候创建，不需要的时候销 毁，是非常浪费资源的。那么我们就可以使用缓存的策略，也就是使用线程池。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> // 创建线程池</span><br><span class="line">ExecutorService threadPool = Executors.newFixedThreadPool(10);</span><br><span class="line">while(true) &#123;</span><br><span class="line">    threadPool.execute(new Runnable() &#123; // 提交多个线程任务，并执行</span><br><span class="line">        @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; is running ..&quot;);</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.sleep(3000);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>4种线程池(Executors不允许使用，使用ThreadPoolExecutor)</strong><br>Java里面线程池的顶级接口是Executor，但严格意义上来说Executor并不是线程池，而是执行线程的工具。真正的线程池接口是ExecutorService。<ul>
-<li><strong>newCachedThreadPool</strong><br>创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute 将重用以前构造的线程(如果线程可用)。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。</li>
-<li><strong>newFixedThreadPool</strong><br>创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。在任意点，在大多数 nThreads 线程会处于处理任务的活动状态。如果在所有线程处于活动状态时提交附加任务，则在有可用线程之前，附加任务将在队列中等待。如果在关闭前的执行期间由于失败而导致任何线程终止，那么一个新线程将代替它执行后续的任务(如果需要)。在某个线程被显式地关闭之前，池中的线程将一直存在。</li>
-<li><strong>newScheduledThreadPool</strong><br>创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool= Executors.newScheduledThreadPool(3); scheduledThreadPool.schedule(newRunnable()&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟三秒&quot;);</span><br><span class="line">    &#125;&#125;, 3, TimeUnit.SECONDS);</span><br><span class="line">scheduledThreadPool.scheduleAtFixedRate(newRunnable()&#123; </span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟 1 秒后每三秒执行一次&quot;);</span><br><span class="line">    &#125;&#125;,1,3,TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure></li>
-<li><strong>newSingleThreadExecutor</strong><br>Executors.newSingleThreadExecutor()返回一个线程池(这个线程池只有一个线程),这个线程 池可以在线程死后(或发生异常时)重新启动一个线程来替代原来的线程继续执行下去!</li>
-</ul>
-</li>
-<li><strong>Executors返回线程池对象的弊端</strong><ul>
-<li>newFixedThreadPool和newSingleThreadExecutor<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM</li>
-<li>newCachedThreadPool和scheduledThreadPool<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的线程，从而导致OOM</li>
-</ul>
-</li>
-</ul>
-</li>
+<li>MySQL</li>
 </ul>
 
       
@@ -1006,6 +916,96 @@
 <li><p><strong>TreeMap(可排序)</strong><br>TreeMap 实现 SortedMap 接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用 Iterator 遍历 TreeMap 时，得到的记录是排过序的。在使用 TreeMap 时，key 必须实现 Comparable 接口或者在构造 TreeMap 传入自定义的Comparator，否则会在运行时抛出 java.lang.ClassCastException 类型的异常。</p>
 <ul>
 <li><strong>LinkHashMap(记录插入顺序)</strong><br>LinkedHashMap 是 HashMap 的一个子类，保存了记录的插入顺序，在用 Iterator 遍历LinkedHashMap 时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">Java核心技术-多线程并发</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">Java核心技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><strong>JAVA线程实现/创建方式</strong><ul>
+<li><strong>继承 Thread 类</strong><br>Thread 类本质上是实现了 Runnable 接口的一个实例，代表一个线程的实例。启动线程的唯一方 法就是通过 Thread 类的 start()实例方法。start()方法是一个 native 方法，它将启动一个新线 程，并执行 run()方法。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> public class MyThread extends Thread &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  </span><br><span class="line">    MyThread myThread1 = new MyThread();</span><br><span class="line">    myThread1.start();</span><br></pre></td></tr></table></figure></li>
+<li><strong>实现 Runnable 接口</strong><br>如果自己的类已经 extends 另一个类，就无法直接 extends Thread，此时，可以实现一个 Runnable 接口。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyThread extends OtherClass implements Runnable &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//启动 MyThread，需要首先实例化一个 Thread，并传入自己的 MyThread 实例:</span><br><span class="line">MyThread myThread = new MyThread();</span><br><span class="line">Thread thread = new Thread(myThread);</span><br><span class="line">thread.start();</span><br><span class="line">//事实上，当传入一个 Runnable target 参数给 Thread 后，Thread 的 run()方法就会调用</span><br><span class="line">target.run()</span><br><span class="line">public void run() &#123;</span><br><span class="line">    if (target != null) &#123;</span><br><span class="line">        target.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>ExecutorService、Callable<Class>、Future 有返回值线程</strong><br>有返回值的任务必须实现 Callable 接口，类似的，无返回值的任务必须 Runnable 接口。执行 Callable 任务后，可以获取一个 Future 的对象，在该对象上调用 get 就可以获取到 Callable 任务 返回的 Object 了，再结合线程池接口 ExecutorService 就可以实现传说中有返回结果的多线程 了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> //创建一个线程池</span><br><span class="line">ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">// 创建多个有返回值的任务</span><br><span class="line">List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">for(i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">    Callable c = new MyCallable(i + &quot; &quot;);</span><br><span class="line">     // 执行任务并获取 Future 对象</span><br><span class="line">    Future f = pool.submit(c);</span><br><span class="line">    list.add(f);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭线程池</span><br><span class="line">pool.shutdown();</span><br><span class="line">// 获取所有并发任务的运行结果</span><br><span class="line">for(Future f : list) &#123;</span><br><span class="line">    // 从 Future 对象上获取任务的返回值，并输出到控制台</span><br><span class="line">    System.out.println(&quot;res:&quot;+ f.get().toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>基于线程池的方式</strong><br>线程和数据库连接这些资源都是非常宝贵的资源。那么每次需要的时候创建，不需要的时候销 毁，是非常浪费资源的。那么我们就可以使用缓存的策略，也就是使用线程池。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> // 创建线程池</span><br><span class="line">ExecutorService threadPool = Executors.newFixedThreadPool(10);</span><br><span class="line">while(true) &#123;</span><br><span class="line">    threadPool.execute(new Runnable() &#123; // 提交多个线程任务，并执行</span><br><span class="line">        @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; is running ..&quot;);</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.sleep(3000);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>4种线程池(Executors不允许使用，使用ThreadPoolExecutor)</strong><br>Java里面线程池的顶级接口是Executor，但严格意义上来说Executor并不是线程池，而是执行线程的工具。真正的线程池接口是ExecutorService。<ul>
+<li><strong>newCachedThreadPool</strong><br>创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute 将重用以前构造的线程(如果线程可用)。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。</li>
+<li><strong>newFixedThreadPool</strong><br>创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。在任意点，在大多数 nThreads 线程会处于处理任务的活动状态。如果在所有线程处于活动状态时提交附加任务，则在有可用线程之前，附加任务将在队列中等待。如果在关闭前的执行期间由于失败而导致任何线程终止，那么一个新线程将代替它执行后续的任务(如果需要)。在某个线程被显式地关闭之前，池中的线程将一直存在。</li>
+<li><strong>newScheduledThreadPool</strong><br>创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool= Executors.newScheduledThreadPool(3); scheduledThreadPool.schedule(newRunnable()&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟三秒&quot;);</span><br><span class="line">    &#125;&#125;, 3, TimeUnit.SECONDS);</span><br><span class="line">scheduledThreadPool.scheduleAtFixedRate(newRunnable()&#123; </span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟 1 秒后每三秒执行一次&quot;);</span><br><span class="line">    &#125;&#125;,1,3,TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure></li>
+<li><strong>newSingleThreadExecutor</strong><br>Executors.newSingleThreadExecutor()返回一个线程池(这个线程池只有一个线程),这个线程 池可以在线程死后(或发生异常时)重新启动一个线程来替代原来的线程继续执行下去!</li>
+</ul>
+</li>
+<li><strong>Executors返回线程池对象的弊端</strong><ul>
+<li>newFixedThreadPool和newSingleThreadExecutor<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM</li>
+<li>newCachedThreadPool和scheduledThreadPool<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的线程，从而导致OOM</li>
 </ul>
 </li>
 </ul>
