@@ -57,7 +57,7 @@
 <meta property="og:site_name" content="LY Blog">
 <meta property="og:description" content="环境准备 安装JDK，同时要在环境变量中设置Java_HOME 进入apache-rocketmq目录，编辑三个文件，bin&#x2F;runserver.sh，bin&#x2F;runbroker.sh，bin&#x2F;tools.sh。第二行和第三行都删了，同时将第一行的值修改为你自己的JDK的主目录12345[ ! -e &amp;quot;$JAVA_HOME&#x2F;bin&#x2F;java&amp;quot; ] &amp;amp;&amp;amp; JAV">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-16T14:30:46.653Z">
+<meta property="og:updated_time" content="2019-11-16T15:20:31.689Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://yoursite.com/2019/11/12/RocketMQ/RocketMQ%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9ARocketMQ%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/">
@@ -238,7 +238,8 @@
 </ul>
 </li>
 <li><h4 id="单台机器快速部署RocketMQ"><a href="#单台机器快速部署RocketMQ" class="headerlink" title="单台机器快速部署RocketMQ"></a>单台机器快速部署RocketMQ</h4>  可以部署在三台机器上，这样可以充分保证NameServer作为路由中心的可用性，哪怕是挂掉两台机器，只要有一个NameServer还在运行，就能保证MQ系统的稳定性。<br>  每台NameServer实际上都会有完整的集群路由信息，包括所有的Broker节点信息，我们的数据信息，等等。所以只要任何一台NameServer存活下来，就可以保证MQ系统正常运行，不会出现故障。<ul>
-<li>sh bin/dledger/fast-try.sh start。<br>这个命令会在当前这台机器上启动一个NameServer和三个Broker，三个Broker其中一个是Master，另外两个是Slave，瞬间就可以组成一个最小可用的RocketMQ集群。</li>
+<li>集群启动、关闭<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sh bin/dledger/fast-try.sh start</span><br><span class="line">sh bin/dledger/fast-try.sh stop</span><br></pre></td></tr></table></figure>
+这个命令会在当前这台机器上启动一个NameServer和三个Broker，三个Broker其中一个是Master，另外两个是Slave，瞬间就可以组成一个最小可用的RocketMQ集群。</li>
 <li>sh bin/mqadmin clusterList -n 127.0.0.1:9876<br>检查一下RocketMQ集群的状态，三行记录，说是一个RaftCluster，Broker名称叫做RaftNode00，然后BID是0、1、2，也有可能是0、1、3。BID为0的就是Master，BID大于0的就都是Slave。</li>
 <li>lsof -i:30921，找出来占用30921端口的进程PID，接着就用kill -9的命令给他杀了。</li>
 <li>sh bin/mqadmin clusterList -n 127.0.0.1:9876<br>此时就会发现作为Leader的BID为0的节点，变成另外一个Broker了，这就是说Slave切换为Master了。</li>
