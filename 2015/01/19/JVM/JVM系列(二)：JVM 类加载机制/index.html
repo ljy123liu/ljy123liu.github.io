@@ -50,14 +50,14 @@
   };
 </script>
 
-  <meta name="description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。 准备">
+  <meta name="description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。 准备：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM系列(二)：JVM 类加载机制">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2015&#x2F;01&#x2F;19&#x2F;JVM&#x2F;JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
-<meta property="og:description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。 准备">
+<meta property="og:description" content="JVM在什么情况下会加载一个类？ 代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&amp;gt; 验证 -&amp;gt; 准备 -&amp;gt; 解析 -&amp;gt; 初始化 -&amp;gt; 使用 -&amp;gt; 卸载从实用角度出发，来看看验证、准备和初始化的过程 验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。 准备：">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-10-26T14:40:45.582Z">
+<meta property="og:updated_time" content="2019-11-18T16:01:47.864Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
@@ -233,7 +233,7 @@
       
         <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
 <li>代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&gt; 验证 -&gt; 准备 -&gt; 解析 -&gt; 初始化 -&gt; 使用 -&gt; 卸载<h4 id="从实用角度出发，来看看验证、准备和初始化的过程"><a href="#从实用角度出发，来看看验证、准备和初始化的过程" class="headerlink" title="从实用角度出发，来看看验证、准备和初始化的过程"></a>从实用角度出发，来看看验证、准备和初始化的过程</h4></li>
-<li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验你加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
+<li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
 <li>准备：<ul>
 <li>假设你有这么一个“ReplicaManager”类，他的“ReplicaManager.class”文件内容刚刚被加载到内存之后，会进行验证，确认这个字节码文件的内容是规范的。</li>
 <li>这个准备工作，其实就是给这个“ReplicaManager”类分配一定的内存空间。然后给他里面的类变量（也就是static修饰的变量）分配内存空间，来一个默认的初始值。</li>
@@ -290,16 +290,16 @@
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/" rel="next" title="JVM系列(一)：Java代码是如何运行起来的">
-                  <i class="fa fa-chevron-left"></i> JVM系列(一)：Java代码是如何运行起来的
+                <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E9%9B%86%E5%90%88/" rel="next" title="Java核心技术-集合">
+                  <i class="fa fa-chevron-left"></i> Java核心技术-集合
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2015/01/19/MySQL/MySQL/" rel="prev" title="MySQL系列(一)：">
-                  MySQL系列(一)： <i class="fa fa-chevron-right"></i>
+                <a href="/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/" rel="prev" title="JVM系列(三)：JVM中有哪些内存区域，分别都是用来干嘛的？">
+                  JVM系列(三)：JVM中有哪些内存区域，分别都是用来干嘛的？ <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -355,14 +355,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
   </nav>
