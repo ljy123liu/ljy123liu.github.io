@@ -180,6 +180,214 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/" class="post-title-link" itemprop="url">软件工程管理（二）敏捷开发</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-05-03 20:11:08" itemprop="dateCreated datePublished" datetime="2019-05-03T20:11:08+08:00">2019-05-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
+                    <span itemprop="name">SoftwareManage</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="什么是敏捷开发"><a href="#什么是敏捷开发" class="headerlink" title="什么是敏捷开发"></a>什么是敏捷开发</h4>  敏捷不是一种方法论，也不是一种软件开发的具体方法，更不是一个框架或过程，而是一套价值观和原则。<br>  用敏捷开发的方式，不再像瀑布模型那样有严格的阶段划分，会在迭代中不断完善；不再写很多文档，而是和客户一起紧密合作；不再抵制需求变更，而是即时响应变更；不再等到测试阶段才发布，而是随时发布，客户随时可以看到东西。<br>  敏捷开发的模式也存在一些问题，例如全程需要客户参与，由于测试相对少一些 ，问题也会相应多一些。</li>
+<li><h4 id="敏捷开发和瀑布模型的差异"><a href="#敏捷开发和瀑布模型的差异" class="headerlink" title="敏捷开发和瀑布模型的差异"></a>敏捷开发和瀑布模型的差异</h4><ul>
+<li>敏捷开发是怎么做需求分析的<ul>
+<li>瀑布模型的一个重要阶段就是需求分析，要有严谨的需求分析，产生详尽的需求分析文档。</li>
+<li>而敏捷开发的需求，主要是来源于一个个小的用户故事，用户故事通常是写在卡片上的一句话，在 Sprint 的开发中，再去确认需求的细节。</li>
+<li>好处是减少了大量需求文档的撰写，可以早些进入开发。但这个对开发人员在需求理解和沟通的能力上要求更高了。</li>
+</ul>
+</li>
+<li>敏捷开发是怎么做架构设计的<ul>
+<li>瀑布模型在需求分析完了以后，就需要根据需求做架构设计。</li>
+<li>而在敏捷开发中，并不是基于完整的用户需求开发，每个 Sprint 只做一部分需求，所以是一种渐进式的架构设计，当前 Sprint 只做适合当前需求的架构设计。</li>
+<li>这种渐进式的架构设计，迭代次数一多，就会出现架构满足不了需求的现象，产生不少冗余代码，通常我们叫它技术债务，需要定期对系统架构进行重构。</li>
+</ul>
+</li>
+<li>敏捷开发怎么保证项目质量的<ul>
+<li>瀑布模型在编码完成后，会有专门的阶段进行测试，以保证质量。</li>
+<li>在敏捷开发的 Sprint 中，并没有专门的测试阶段，这就依赖于开发功能的同时，要编写单元测试和集成测试代码，用自动化的方式辅助完成测试。</li>
+</ul>
+</li>
+<li>敏捷开发是怎么发布部署的<ul>
+<li>瀑布模型通常在编码结束后，开始部署测试环境，然后在测试阶段定期部署测试环境。测试验收通过后，发布部署到生产环境。</li>
+<li>在敏捷开发中，这种持续构建、持续发布的概念叫持续集成，因为整个过程都是全自动化的，每次完成一个任务，提交代码后都可以触发一次构建部署操作，脚本会拿最新的代码做一次全新的构建，然后运行所有的单元测试和集成测试代码，测试通过后部署到测试环境。</li>
+</ul>
+</li>
+<li><h4 id="敏捷开发的-Sprint-和迭代模型的迭代有什么区别"><a href="#敏捷开发的-Sprint-和迭代模型的迭代有什么区别" class="headerlink" title="敏捷开发的 Sprint 和迭代模型的迭代有什么区别"></a>敏捷开发的 Sprint 和迭代模型的迭代有什么区别</h4><ul>
+<li>我们假设有两个团队，都要实现一个简单的用户系统，一个团队用迭代模型，一个团队用敏捷开发（Scrum），一个迭代 /Sprint 的时间周期都是 2 周（10 个工作日）。</li>
+<li>迭代模型所在的团队，产品经理会先花 2 天时间去分析需求，写成需求分析文档，架构师会花 3 天时间来做设计，程序员会花 3 天时间编码，测试再花 2 天时间去测试，最后上线用户系统。</li>
+<li>敏捷开发的团队，产品经理会把需求拆分成了几个简单的用户故事：用户登录、用户注册、找回密码、修改资料，然后放到当前 Sprint 的 Backlog（任务清单），Team（开发团队）成员开始从 Backlog 选择用户故事。<ul>
+<li>程序员 A 选了“用户登录”这个用户故事，他会去找产品经理确认需求细节，之后动手实现这个用户故事。</li>
+<li>功能完成后，同时程序员 A 还写了单元测试代码和集成测试代码，对登录的功能写了自动化测试。完成后，通过持续集成工具测试和部署到测试环境。部署完成后，用户登录功能就可以进行使用了。</li>
+<li>这个过程，程序员 A 可能花了 4 天时间，做完“用户登录”这个用户故事之后，他又开始继续选取“找回密码”的用户故事来做，4 天时间也完成了。</li>
+<li>其他程序员也和程序员 A 一样，他们也会从 Backlog 选择一些用户故事来做。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">软件工程管理（一）瀑布模型</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-05-02 00:34:14" itemprop="dateCreated datePublished" datetime="2019-05-02T00:34:14+08:00">2019-05-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
+                    <span itemprop="name">SoftwareManage</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="瀑布模型把整个项目过程分成了六个主要阶段"><a href="#瀑布模型把整个项目过程分成了六个主要阶段" class="headerlink" title="瀑布模型把整个项目过程分成了六个主要阶段"></a>瀑布模型把整个项目过程分成了六个主要阶段</h4><ul>
+<li>问题的定义及规划<br>需求方和开发方共同确定软件开发目标，同时还要做可行性研究，以确定项目可行。这个阶段会产生需求文档和可行性研究报告。</li>
+<li>需求分析<br>对需求方提出的所有需求，进行详细的分析。这个阶段一般需要和客户反复确认，以保证能充分理解客户需求。最终会形成需求分析文档。</li>
+<li>软件设计<br>根据需求分析的结果，对整个软件系统进行抽象和设计，如系统框架设计，数据库设计等等。最后会形成架构设计文档。</li>
+<li>程序编码<br>将架构设计和界面设计的结果转换成计算机能运行的程序代码。</li>
+<li>软件测试<br>对可运行的结果对照需求分析文档进行严密的测试。</li>
+<li>运行维护<br>在软件开发完成，正式运行投入使用。后续需要继续维护，修复错误和增加功能。交付时需要提供使用说明文档。</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型优点"><a href="#瀑布模型优点" class="headerlink" title="瀑布模型优点"></a>瀑布模型优点</h4><ul>
+<li>简单易行</li>
+<li>可以按照阶段检查，能及时发现问题</li>
+<li>前一个阶段完成后，就可以重点关注下一个阶段</li>
+<li>有很好的分工协作</li>
+<li>对质量有保证</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型缺点"><a href="#瀑布模型缺点" class="headerlink" title="瀑布模型缺点"></a>瀑布模型缺点</h4><ul>
+<li>难以响应需求的变更，当需求发生改变的时候，越到后期代价越大</li>
+<li>工作量分布不均匀。例如前期开发，测试人员无法参与，而后期开发，测试人员又特别忙</li>
+<li>前期进度受阻，会一只压缩后续阶段时间，导致延期或影响质量</li>
+<li>一直到最后阶段才能看到结果</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型以外的开发模型"><a href="#瀑布模型以外的开发模型" class="headerlink" title="瀑布模型以外的开发模型"></a>瀑布模型以外的开发模型</h4><ul>
+<li>快速开发快速改：先迅速建造一个可以运行的软件原型，然后收集用户反馈，再反复修改确认</li>
+<li>大瀑布拆小瀑布：系统进行模块化处理，分批次交付软件产品</li>
+<li>迭代模型：每次迭代都有一个可用的版本</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/19/Maven/Maven(%E4%B8%80)%EF%BC%9A%E5%AE%89%E8%A3%85%E3%80%81%E9%85%8D%E7%BD%AE%E3%80%81mvn%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -328,6 +536,195 @@
 <li>因此，JVM必须有一块区域是来保存每个方法内的局部变量等数据的，这个区域就是Java虚拟机栈</li>
 <li>每个线程都有自己的Java虚拟机栈</li>
 <li>在栈帧里存放了这个方法对应的局部变量之类的数据，包括这个方法执行的其他相关的信息，方法执行完毕之后就出栈。<br><img src="https://mubu.com/document_image/9f97e9a9-24b1-4944-a4af-8fc8e34e8ab6-4276170.jpg" alt="avatar"></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">JVM系列(二)：JVM 类加载机制</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
+<li>代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&gt; 验证 -&gt; 准备 -&gt; 解析 -&gt; 初始化 -&gt; 使用 -&gt; 卸载<h4 id="从实用角度出发，来看看验证、准备和初始化的过程"><a href="#从实用角度出发，来看看验证、准备和初始化的过程" class="headerlink" title="从实用角度出发，来看看验证、准备和初始化的过程"></a>从实用角度出发，来看看验证、准备和初始化的过程</h4></li>
+<li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
+<li>准备：<ul>
+<li>假设你有这么一个“ReplicaManager”类，他的“ReplicaManager.class”文件内容刚刚被加载到内存之后，会进行验证，确认这个字节码文件的内容是规范的。</li>
+<li>这个准备工作，其实就是给这个“ReplicaManager”类分配一定的内存空间。然后给他里面的类变量（也就是static修饰的变量）分配内存空间，来一个默认的初始值。</li>
+<li>解析：符号引用替换为直接引用，内容很复杂，涉及JVM底层</li>
+</ul>
+</li>
+</ul>
+<h4 id="核心阶段：初始化"><a href="#核心阶段：初始化" class="headerlink" title="核心阶段：初始化"></a>核心阶段：初始化</h4><ul>
+<li>什么时候会初始化一个类？<ul>
+<li>一般来说有以下一些时机：比如“new ReplicaManager()”来实例化类的对象了，此时就会触发类的加载到初始化的全过程，把这个类准备好，然后再实例化一个对象出来。或者是包含“main()”方法的主类，必须是立马初始化的。</li>
+<li>此外，这里还有一个非常重要的规则，就是如果初始化一个类的时候，发现他的父类还没初始化，那么必须先初始化他的父类。</li>
+</ul>
+</li>
+</ul>
+<h4 id="类加载器和双亲委派机制"><a href="#类加载器和双亲委派机制" class="headerlink" title="类加载器和双亲委派机制"></a>类加载器和双亲委派机制</h4><ul>
+<li><p>类加载器</p>
+<ul>
+<li>启动类加载器：Bootstrap ClassLoader，他主要是负责加载我们在机器上安装的Java目录下的核心类的，所以一旦你的JVM启动，那么首先就会依托启动类加载器，去加载你的Java安装目录下的“lib”目录中的核心类库。</li>
+</ul>
+</li>
+<li><p>扩展类加载器</p>
+<ul>
+<li>这个类加载器其实也是类似的，就是你的Java安装目录下，有一个“lib\ext”目录</li>
+</ul>
+</li>
+<li><p>应用程序类加载器</p>
+<ul>
+<li>其实你大致就理解为去加载你写好的Java代码吧，这个类加载器就负责加载你写好的那些类到内存里。</li>
+</ul>
+</li>
+<li><p>自定义类加载器</p>
+<ul>
+<li>根据自己的需求加载类</li>
+</ul>
+</li>
+<li><p>双亲委派机制</p>
+<ul>
+<li>JVM的类加载器是有亲子层级结构的，就是说启动类加载器是最上层的，扩展类加载器在第二层，第三层是应用程序类加载器，最后一层是自定义类加载器。基于亲子层级结构，就有一个双亲委派的机制</li>
+<li>应用程序类加载器在自己负责的范围内，比如就是你写好的那个系统打包成的jar包吧，一下子发现，就在这里！然后就自己把这个类加载到内存里去了。</li>
+<li>先找父亲去加载，不行的话再由儿子来加载。（双亲委派机制）</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL%E6%B3%A8%E6%84%8F%E7%82%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/01/19/MySQL/MySQL%E6%B3%A8%E6%84%8F%E7%82%B9/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index">
+                    <span itemprop="name">MySQL</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>慢查询<ul>
+<li>my.cnf配置<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 打开慢查询日志</span><br><span class="line">slow_query_log=1</span><br><span class="line"># 慢查询日志存储路径</span><br><span class="line">slow_query_log_file=/var/log/mysql/log-slow-queries.log</span><br><span class="line"># SQL执行时间大于3秒，则记录日志</span><br><span class="line">long_query_time=3</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
 </ul>
 
       
@@ -512,7 +909,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -526,7 +923,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">JVM系列(二)：JVM 类加载机制</a>
+            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">Java核心技术-多线程并发</a>
         </h1>
 
         <div class="post-meta">
@@ -544,8 +941,8 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/JVM/" itemprop="url" rel="index">
-                    <span itemprop="name">JVM</span>
+                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">Java核心技术</span>
                   </a>
                 </span>
             </span>
@@ -561,49 +958,25 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
-<li>代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&gt; 验证 -&gt; 准备 -&gt; 解析 -&gt; 初始化 -&gt; 使用 -&gt; 卸载<h4 id="从实用角度出发，来看看验证、准备和初始化的过程"><a href="#从实用角度出发，来看看验证、准备和初始化的过程" class="headerlink" title="从实用角度出发，来看看验证、准备和初始化的过程"></a>从实用角度出发，来看看验证、准备和初始化的过程</h4></li>
-<li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
-<li>准备：<ul>
-<li>假设你有这么一个“ReplicaManager”类，他的“ReplicaManager.class”文件内容刚刚被加载到内存之后，会进行验证，确认这个字节码文件的内容是规范的。</li>
-<li>这个准备工作，其实就是给这个“ReplicaManager”类分配一定的内存空间。然后给他里面的类变量（也就是static修饰的变量）分配内存空间，来一个默认的初始值。</li>
-<li>解析：符号引用替换为直接引用，内容很复杂，涉及JVM底层</li>
+          <ul>
+<li><strong>JAVA线程实现/创建方式</strong><ul>
+<li><strong>继承 Thread 类</strong><br>Thread 类本质上是实现了 Runnable 接口的一个实例，代表一个线程的实例。启动线程的唯一方 法就是通过 Thread 类的 start()实例方法。start()方法是一个 native 方法，它将启动一个新线 程，并执行 run()方法。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> public class MyThread extends Thread &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  </span><br><span class="line">    MyThread myThread1 = new MyThread();</span><br><span class="line">    myThread1.start();</span><br></pre></td></tr></table></figure></li>
+<li><strong>实现 Runnable 接口</strong><br>如果自己的类已经 extends 另一个类，就无法直接 extends Thread，此时，可以实现一个 Runnable 接口。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyThread extends OtherClass implements Runnable &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//启动 MyThread，需要首先实例化一个 Thread，并传入自己的 MyThread 实例:</span><br><span class="line">MyThread myThread = new MyThread();</span><br><span class="line">Thread thread = new Thread(myThread);</span><br><span class="line">thread.start();</span><br><span class="line">//事实上，当传入一个 Runnable target 参数给 Thread 后，Thread 的 run()方法就会调用</span><br><span class="line">target.run()</span><br><span class="line">public void run() &#123;</span><br><span class="line">    if (target != null) &#123;</span><br><span class="line">        target.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>ExecutorService、Callable<Class>、Future 有返回值线程</strong><br>有返回值的任务必须实现 Callable 接口，类似的，无返回值的任务必须 Runnable 接口。执行 Callable 任务后，可以获取一个 Future 的对象，在该对象上调用 get 就可以获取到 Callable 任务 返回的 Object 了，再结合线程池接口 ExecutorService 就可以实现传说中有返回结果的多线程 了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> //创建一个线程池</span><br><span class="line">ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">// 创建多个有返回值的任务</span><br><span class="line">List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">for(i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">    Callable c = new MyCallable(i + &quot; &quot;);</span><br><span class="line">     // 执行任务并获取 Future 对象</span><br><span class="line">    Future f = pool.submit(c);</span><br><span class="line">    list.add(f);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭线程池</span><br><span class="line">pool.shutdown();</span><br><span class="line">// 获取所有并发任务的运行结果</span><br><span class="line">for(Future f : list) &#123;</span><br><span class="line">    // 从 Future 对象上获取任务的返回值，并输出到控制台</span><br><span class="line">    System.out.println(&quot;res:&quot;+ f.get().toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>基于线程池的方式</strong><br>线程和数据库连接这些资源都是非常宝贵的资源。那么每次需要的时候创建，不需要的时候销 毁，是非常浪费资源的。那么我们就可以使用缓存的策略，也就是使用线程池。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> // 创建线程池</span><br><span class="line">ExecutorService threadPool = Executors.newFixedThreadPool(10);</span><br><span class="line">while(true) &#123;</span><br><span class="line">    threadPool.execute(new Runnable() &#123; // 提交多个线程任务，并执行</span><br><span class="line">        @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; is running ..&quot;);</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.sleep(3000);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>4种线程池(Executors不允许使用，使用ThreadPoolExecutor)</strong><br>Java里面线程池的顶级接口是Executor，但严格意义上来说Executor并不是线程池，而是执行线程的工具。真正的线程池接口是ExecutorService。<ul>
+<li><strong>newCachedThreadPool</strong><br>创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute 将重用以前构造的线程(如果线程可用)。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。</li>
+<li><strong>newFixedThreadPool</strong><br>创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。在任意点，在大多数 nThreads 线程会处于处理任务的活动状态。如果在所有线程处于活动状态时提交附加任务，则在有可用线程之前，附加任务将在队列中等待。如果在关闭前的执行期间由于失败而导致任何线程终止，那么一个新线程将代替它执行后续的任务(如果需要)。在某个线程被显式地关闭之前，池中的线程将一直存在。</li>
+<li><strong>newScheduledThreadPool</strong><br>创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool= Executors.newScheduledThreadPool(3); scheduledThreadPool.schedule(newRunnable()&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟三秒&quot;);</span><br><span class="line">    &#125;&#125;, 3, TimeUnit.SECONDS);</span><br><span class="line">scheduledThreadPool.scheduleAtFixedRate(newRunnable()&#123; </span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟 1 秒后每三秒执行一次&quot;);</span><br><span class="line">    &#125;&#125;,1,3,TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure></li>
+<li><strong>newSingleThreadExecutor</strong><br>Executors.newSingleThreadExecutor()返回一个线程池(这个线程池只有一个线程),这个线程 池可以在线程死后(或发生异常时)重新启动一个线程来替代原来的线程继续执行下去!</li>
 </ul>
 </li>
-</ul>
-<h4 id="核心阶段：初始化"><a href="#核心阶段：初始化" class="headerlink" title="核心阶段：初始化"></a>核心阶段：初始化</h4><ul>
-<li>什么时候会初始化一个类？<ul>
-<li>一般来说有以下一些时机：比如“new ReplicaManager()”来实例化类的对象了，此时就会触发类的加载到初始化的全过程，把这个类准备好，然后再实例化一个对象出来。或者是包含“main()”方法的主类，必须是立马初始化的。</li>
-<li>此外，这里还有一个非常重要的规则，就是如果初始化一个类的时候，发现他的父类还没初始化，那么必须先初始化他的父类。</li>
+<li><strong>Executors返回线程池对象的弊端</strong><ul>
+<li>newFixedThreadPool和newSingleThreadExecutor<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM</li>
+<li>newCachedThreadPool和scheduledThreadPool<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的线程，从而导致OOM</li>
 </ul>
 </li>
-</ul>
-<h4 id="类加载器和双亲委派机制"><a href="#类加载器和双亲委派机制" class="headerlink" title="类加载器和双亲委派机制"></a>类加载器和双亲委派机制</h4><ul>
-<li><p>类加载器</p>
-<ul>
-<li>启动类加载器：Bootstrap ClassLoader，他主要是负责加载我们在机器上安装的Java目录下的核心类的，所以一旦你的JVM启动，那么首先就会依托启动类加载器，去加载你的Java安装目录下的“lib”目录中的核心类库。</li>
-</ul>
-</li>
-<li><p>扩展类加载器</p>
-<ul>
-<li>这个类加载器其实也是类似的，就是你的Java安装目录下，有一个“lib\ext”目录</li>
-</ul>
-</li>
-<li><p>应用程序类加载器</p>
-<ul>
-<li>其实你大致就理解为去加载你写好的Java代码吧，这个类加载器就负责加载你写好的那些类到内存里。</li>
-</ul>
-</li>
-<li><p>自定义类加载器</p>
-<ul>
-<li>根据自己的需求加载类</li>
-</ul>
-</li>
-<li><p>双亲委派机制</p>
-<ul>
-<li>JVM的类加载器是有亲子层级结构的，就是说启动类加载器是最上层的，扩展类加载器在第二层，第三层是应用程序类加载器，最后一层是自定义类加载器。基于亲子层级结构，就有一个双亲委派的机制</li>
-<li>应用程序类加载器在自己负责的范围内，比如就是你写好的那个系统打包成的jar包吧，一下子发现，就在这里！然后就自己把这个类加载到内存里去了。</li>
-<li>先找父亲去加载，不行的话再由儿子来加载。（双亲委派机制）</li>
 </ul>
 </li>
 </ul>
@@ -739,96 +1112,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">Java核心技术-多线程并发</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
-                    <span itemprop="name">Java核心技术</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><strong>JAVA线程实现/创建方式</strong><ul>
-<li><strong>继承 Thread 类</strong><br>Thread 类本质上是实现了 Runnable 接口的一个实例，代表一个线程的实例。启动线程的唯一方 法就是通过 Thread 类的 start()实例方法。start()方法是一个 native 方法，它将启动一个新线 程，并执行 run()方法。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> public class MyThread extends Thread &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  </span><br><span class="line">    MyThread myThread1 = new MyThread();</span><br><span class="line">    myThread1.start();</span><br></pre></td></tr></table></figure></li>
-<li><strong>实现 Runnable 接口</strong><br>如果自己的类已经 extends 另一个类，就无法直接 extends Thread，此时，可以实现一个 Runnable 接口。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyThread extends OtherClass implements Runnable &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//启动 MyThread，需要首先实例化一个 Thread，并传入自己的 MyThread 实例:</span><br><span class="line">MyThread myThread = new MyThread();</span><br><span class="line">Thread thread = new Thread(myThread);</span><br><span class="line">thread.start();</span><br><span class="line">//事实上，当传入一个 Runnable target 参数给 Thread 后，Thread 的 run()方法就会调用</span><br><span class="line">target.run()</span><br><span class="line">public void run() &#123;</span><br><span class="line">    if (target != null) &#123;</span><br><span class="line">        target.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>ExecutorService、Callable<Class>、Future 有返回值线程</strong><br>有返回值的任务必须实现 Callable 接口，类似的，无返回值的任务必须 Runnable 接口。执行 Callable 任务后，可以获取一个 Future 的对象，在该对象上调用 get 就可以获取到 Callable 任务 返回的 Object 了，再结合线程池接口 ExecutorService 就可以实现传说中有返回结果的多线程 了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> //创建一个线程池</span><br><span class="line">ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">// 创建多个有返回值的任务</span><br><span class="line">List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">for(i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">    Callable c = new MyCallable(i + &quot; &quot;);</span><br><span class="line">     // 执行任务并获取 Future 对象</span><br><span class="line">    Future f = pool.submit(c);</span><br><span class="line">    list.add(f);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭线程池</span><br><span class="line">pool.shutdown();</span><br><span class="line">// 获取所有并发任务的运行结果</span><br><span class="line">for(Future f : list) &#123;</span><br><span class="line">    // 从 Future 对象上获取任务的返回值，并输出到控制台</span><br><span class="line">    System.out.println(&quot;res:&quot;+ f.get().toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>基于线程池的方式</strong><br>线程和数据库连接这些资源都是非常宝贵的资源。那么每次需要的时候创建，不需要的时候销 毁，是非常浪费资源的。那么我们就可以使用缓存的策略，也就是使用线程池。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> // 创建线程池</span><br><span class="line">ExecutorService threadPool = Executors.newFixedThreadPool(10);</span><br><span class="line">while(true) &#123;</span><br><span class="line">    threadPool.execute(new Runnable() &#123; // 提交多个线程任务，并执行</span><br><span class="line">        @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; is running ..&quot;);</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.sleep(3000);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>4种线程池(Executors不允许使用，使用ThreadPoolExecutor)</strong><br>Java里面线程池的顶级接口是Executor，但严格意义上来说Executor并不是线程池，而是执行线程的工具。真正的线程池接口是ExecutorService。<ul>
-<li><strong>newCachedThreadPool</strong><br>创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute 将重用以前构造的线程(如果线程可用)。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。</li>
-<li><strong>newFixedThreadPool</strong><br>创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。在任意点，在大多数 nThreads 线程会处于处理任务的活动状态。如果在所有线程处于活动状态时提交附加任务，则在有可用线程之前，附加任务将在队列中等待。如果在关闭前的执行期间由于失败而导致任何线程终止，那么一个新线程将代替它执行后续的任务(如果需要)。在某个线程被显式地关闭之前，池中的线程将一直存在。</li>
-<li><strong>newScheduledThreadPool</strong><br>创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool= Executors.newScheduledThreadPool(3); scheduledThreadPool.schedule(newRunnable()&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟三秒&quot;);</span><br><span class="line">    &#125;&#125;, 3, TimeUnit.SECONDS);</span><br><span class="line">scheduledThreadPool.scheduleAtFixedRate(newRunnable()&#123; </span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟 1 秒后每三秒执行一次&quot;);</span><br><span class="line">    &#125;&#125;,1,3,TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure></li>
-<li><strong>newSingleThreadExecutor</strong><br>Executors.newSingleThreadExecutor()返回一个线程池(这个线程池只有一个线程),这个线程 池可以在线程死后(或发生异常时)重新启动一个线程来替代原来的线程继续执行下去!</li>
-</ul>
-</li>
-<li><strong>Executors返回线程池对象的弊端</strong><ul>
-<li>newFixedThreadPool和newSingleThreadExecutor<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM</li>
-<li>newCachedThreadPool和scheduledThreadPool<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的线程，从而导致OOM</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -879,7 +1162,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

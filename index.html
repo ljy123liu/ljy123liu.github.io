@@ -180,6 +180,187 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/" class="post-title-link" itemprop="url">RocketMQ（九）：生产者如何发送消息</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-09 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-09T19:34:14+08:00">2019-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="Topic、MessageQueue以及Broker之间"><a href="#Topic、MessageQueue以及Broker之间" class="headerlink" title="Topic、MessageQueue以及Broker之间"></a>Topic、MessageQueue以及Broker之间</h4><ul>
+<li>MessageQueue就是RocketMQ中非常关键的一个数据分片机制，通过MessageQueue将一个Topic的数据拆分为了很多个数据分片，然后在每个Broker机器上都存储一些MessageQueue，实现Topic数据的分布式存储。</li>
+</ul>
+</li>
+<li><h4 id="生产者发送消息的时候写入哪个MessageQueue？"><a href="#生产者发送消息的时候写入哪个MessageQueue？" class="headerlink" title="生产者发送消息的时候写入哪个MessageQueue？"></a>生产者发送消息的时候写入哪个MessageQueue？</h4><ul>
+<li>生产者从NameServer中知道，一个Topic有几个MessageQueue，哪些MessageQueue在哪台Broker机器上</li>
+<li>有多种写入策略，暂定按均写入。假设单个Broker可以抗每秒7万并发，那么两个Broker就可以抗每秒14万并发<br><img src="https://s2.ax1x.com/2019/12/09/Q0UMfe.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="如果某个Broker出现故障"><a href="#如果某个Broker出现故障" class="headerlink" title="如果某个Broker出现故障"></a>如果某个Broker出现故障</h4><ul>
+<li>如果某个Master Broker挂了，此时正在等待的其他Slave Broker自动热切换为Master Broker，那么这个时候对这一组Broker就没有Master Broker可以写入</li>
+<li><strong>sendLatencyFaultEnable</strong> 建议在Producer中开启一个开关，会有一个自动容错机制，比如如果某次访问一个Broker发现网络延迟有500ms，然后还无法访问，那么就会自动回避访问这个Broker一段时间，比如接下来3000ms内，就不会访问这个Broker</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">RocketMQ（八）：消息发送及消费模式</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-11-27 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-27T19:34:14+08:00">2019-11-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="消息发送模式"><a href="#消息发送模式" class="headerlink" title="消息发送模式"></a>消息发送模式</h4><ul>
+<li>同步发送<ul>
+<li>等待MQ返回一个结果，代码才能往下走<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SendResult sendResult = producer.send(msg);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>异步发送<ul>
+<li>设置一步发送失败的时候重试次数为0<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 设置一步发送失败的时候重试次数为0</span><br><span class="line">producer.setRetryTimesWhenSendAsyncFailed(0);</span><br><span class="line"></span><br><span class="line">producer.send(msg, new SendCallback() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(SendResult sendResult) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onException(Throwable throwable) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>发送单向消息<ul>
+<li>发送一个消息给MQ，然后代码就往下执行，根本不会关注MQ有没有返回结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">producer.sendOneway(msg);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h4><ul>
+<li>Push消费，DefaultMQPushConsumer<ul>
+<li>Broker会主动把消息发送给消费者，消费者是被动的接收Broker推送给过来的消息，然后进行处理。</li>
+</ul>
+</li>
+<li>Pull消费，DefaultMQPullConsumer<ul>
+<li>Broker不会主动推送消息给Consumer，而是消费者主动发送请求到Broker去拉取消息过来。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9A%E5%B0%8F%E8%A7%84%E6%A8%A1RocketMQ%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E5%8E%8B%E6%B5%8B%EF%BC%8C%E5%90%8C%E6%97%B6%E4%B8%BA%E7%94%9F%E4%BA%A7%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E8%A7%84%E5%88%92/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -989,214 +1170,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/" class="post-title-link" itemprop="url">软件工程管理（二）敏捷开发</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-05-03 20:11:08" itemprop="dateCreated datePublished" datetime="2019-05-03T20:11:08+08:00">2019-05-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
-                    <span itemprop="name">SoftwareManage</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="什么是敏捷开发"><a href="#什么是敏捷开发" class="headerlink" title="什么是敏捷开发"></a>什么是敏捷开发</h4>  敏捷不是一种方法论，也不是一种软件开发的具体方法，更不是一个框架或过程，而是一套价值观和原则。<br>  用敏捷开发的方式，不再像瀑布模型那样有严格的阶段划分，会在迭代中不断完善；不再写很多文档，而是和客户一起紧密合作；不再抵制需求变更，而是即时响应变更；不再等到测试阶段才发布，而是随时发布，客户随时可以看到东西。<br>  敏捷开发的模式也存在一些问题，例如全程需要客户参与，由于测试相对少一些 ，问题也会相应多一些。</li>
-<li><h4 id="敏捷开发和瀑布模型的差异"><a href="#敏捷开发和瀑布模型的差异" class="headerlink" title="敏捷开发和瀑布模型的差异"></a>敏捷开发和瀑布模型的差异</h4><ul>
-<li>敏捷开发是怎么做需求分析的<ul>
-<li>瀑布模型的一个重要阶段就是需求分析，要有严谨的需求分析，产生详尽的需求分析文档。</li>
-<li>而敏捷开发的需求，主要是来源于一个个小的用户故事，用户故事通常是写在卡片上的一句话，在 Sprint 的开发中，再去确认需求的细节。</li>
-<li>好处是减少了大量需求文档的撰写，可以早些进入开发。但这个对开发人员在需求理解和沟通的能力上要求更高了。</li>
-</ul>
-</li>
-<li>敏捷开发是怎么做架构设计的<ul>
-<li>瀑布模型在需求分析完了以后，就需要根据需求做架构设计。</li>
-<li>而在敏捷开发中，并不是基于完整的用户需求开发，每个 Sprint 只做一部分需求，所以是一种渐进式的架构设计，当前 Sprint 只做适合当前需求的架构设计。</li>
-<li>这种渐进式的架构设计，迭代次数一多，就会出现架构满足不了需求的现象，产生不少冗余代码，通常我们叫它技术债务，需要定期对系统架构进行重构。</li>
-</ul>
-</li>
-<li>敏捷开发怎么保证项目质量的<ul>
-<li>瀑布模型在编码完成后，会有专门的阶段进行测试，以保证质量。</li>
-<li>在敏捷开发的 Sprint 中，并没有专门的测试阶段，这就依赖于开发功能的同时，要编写单元测试和集成测试代码，用自动化的方式辅助完成测试。</li>
-</ul>
-</li>
-<li>敏捷开发是怎么发布部署的<ul>
-<li>瀑布模型通常在编码结束后，开始部署测试环境，然后在测试阶段定期部署测试环境。测试验收通过后，发布部署到生产环境。</li>
-<li>在敏捷开发中，这种持续构建、持续发布的概念叫持续集成，因为整个过程都是全自动化的，每次完成一个任务，提交代码后都可以触发一次构建部署操作，脚本会拿最新的代码做一次全新的构建，然后运行所有的单元测试和集成测试代码，测试通过后部署到测试环境。</li>
-</ul>
-</li>
-<li><h4 id="敏捷开发的-Sprint-和迭代模型的迭代有什么区别"><a href="#敏捷开发的-Sprint-和迭代模型的迭代有什么区别" class="headerlink" title="敏捷开发的 Sprint 和迭代模型的迭代有什么区别"></a>敏捷开发的 Sprint 和迭代模型的迭代有什么区别</h4><ul>
-<li>我们假设有两个团队，都要实现一个简单的用户系统，一个团队用迭代模型，一个团队用敏捷开发（Scrum），一个迭代 /Sprint 的时间周期都是 2 周（10 个工作日）。</li>
-<li>迭代模型所在的团队，产品经理会先花 2 天时间去分析需求，写成需求分析文档，架构师会花 3 天时间来做设计，程序员会花 3 天时间编码，测试再花 2 天时间去测试，最后上线用户系统。</li>
-<li>敏捷开发的团队，产品经理会把需求拆分成了几个简单的用户故事：用户登录、用户注册、找回密码、修改资料，然后放到当前 Sprint 的 Backlog（任务清单），Team（开发团队）成员开始从 Backlog 选择用户故事。<ul>
-<li>程序员 A 选了“用户登录”这个用户故事，他会去找产品经理确认需求细节，之后动手实现这个用户故事。</li>
-<li>功能完成后，同时程序员 A 还写了单元测试代码和集成测试代码，对登录的功能写了自动化测试。完成后，通过持续集成工具测试和部署到测试环境。部署完成后，用户登录功能就可以进行使用了。</li>
-<li>这个过程，程序员 A 可能花了 4 天时间，做完“用户登录”这个用户故事之后，他又开始继续选取“找回密码”的用户故事来做，4 天时间也完成了。</li>
-<li>其他程序员也和程序员 A 一样，他们也会从 Backlog 选择一些用户故事来做。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">软件工程管理（一）瀑布模型</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-05-02 00:34:14" itemprop="dateCreated datePublished" datetime="2019-05-02T00:34:14+08:00">2019-05-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
-                    <span itemprop="name">SoftwareManage</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="瀑布模型把整个项目过程分成了六个主要阶段"><a href="#瀑布模型把整个项目过程分成了六个主要阶段" class="headerlink" title="瀑布模型把整个项目过程分成了六个主要阶段"></a>瀑布模型把整个项目过程分成了六个主要阶段</h4><ul>
-<li>问题的定义及规划<br>需求方和开发方共同确定软件开发目标，同时还要做可行性研究，以确定项目可行。这个阶段会产生需求文档和可行性研究报告。</li>
-<li>需求分析<br>对需求方提出的所有需求，进行详细的分析。这个阶段一般需要和客户反复确认，以保证能充分理解客户需求。最终会形成需求分析文档。</li>
-<li>软件设计<br>根据需求分析的结果，对整个软件系统进行抽象和设计，如系统框架设计，数据库设计等等。最后会形成架构设计文档。</li>
-<li>程序编码<br>将架构设计和界面设计的结果转换成计算机能运行的程序代码。</li>
-<li>软件测试<br>对可运行的结果对照需求分析文档进行严密的测试。</li>
-<li>运行维护<br>在软件开发完成，正式运行投入使用。后续需要继续维护，修复错误和增加功能。交付时需要提供使用说明文档。</li>
-</ul>
-</li>
-<li><h4 id="瀑布模型优点"><a href="#瀑布模型优点" class="headerlink" title="瀑布模型优点"></a>瀑布模型优点</h4><ul>
-<li>简单易行</li>
-<li>可以按照阶段检查，能及时发现问题</li>
-<li>前一个阶段完成后，就可以重点关注下一个阶段</li>
-<li>有很好的分工协作</li>
-<li>对质量有保证</li>
-</ul>
-</li>
-<li><h4 id="瀑布模型缺点"><a href="#瀑布模型缺点" class="headerlink" title="瀑布模型缺点"></a>瀑布模型缺点</h4><ul>
-<li>难以响应需求的变更，当需求发生改变的时候，越到后期代价越大</li>
-<li>工作量分布不均匀。例如前期开发，测试人员无法参与，而后期开发，测试人员又特别忙</li>
-<li>前期进度受阻，会一只压缩后续阶段时间，导致延期或影响质量</li>
-<li>一直到最后阶段才能看到结果</li>
-</ul>
-</li>
-<li><h4 id="瀑布模型以外的开发模型"><a href="#瀑布模型以外的开发模型" class="headerlink" title="瀑布模型以外的开发模型"></a>瀑布模型以外的开发模型</h4><ul>
-<li>快速开发快速改：先迅速建造一个可以运行的软件原型，然后收集用户反馈，再反复修改确认</li>
-<li>大瀑布拆小瀑布：系统进行模块化处理，分批次交付软件产品</li>
-<li>迭代模型：每次迭代都有一个可用的版本</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1247,7 +1220,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
