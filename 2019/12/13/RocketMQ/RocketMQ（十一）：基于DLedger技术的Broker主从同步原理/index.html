@@ -50,17 +50,20 @@
   };
 </script>
 
-  <meta name="description" content="消息发送模式 同步发送 等待MQ返回一个结果，代码才能往下走1SendResult sendResult = producer.send(msg);   异步发送 设置一步发送失败的时候重试次数为01234567891011121314&#x2F;&#x2F; 设置一步发送失败的时候重试次数为0producer.setRetryTimesWhenSendAsyncFailed(0);producer.send(ms">
+  <meta name="description" content="Broker高可用架构原理回顾 基于DLedger实现，一条数据就会在三个Broker上有三份副本，此时如果Leader Broker宕机，那么就直接让其他的Follower Broker自动切换为新的Leader Broker。   基于DLedger技术替换Broker的CommitLog DLedger有一个CommitLog机制，你把数据交给他，他会写入CommitLog磁盘文件里去。用">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RocketMQ（八）：消息发送及消费模式">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;27&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F&#x2F;index.html">
+<meta property="og:title" content="RocketMQ（十一）：基于DLedger技术的Broker主从同步原理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89%EF%BC%9A%E5%9F%BA%E4%BA%8EDLedger%E6%8A%80%E6%9C%AF%E7%9A%84Broker%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8E%9F%E7%90%86&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
-<meta property="og:description" content="消息发送模式 同步发送 等待MQ返回一个结果，代码才能往下走1SendResult sendResult = producer.send(msg);   异步发送 设置一步发送失败的时候重试次数为01234567891011121314&#x2F;&#x2F; 设置一步发送失败的时候重试次数为0producer.setRetryTimesWhenSendAsyncFailed(0);producer.send(ms">
+<meta property="og:description" content="Broker高可用架构原理回顾 基于DLedger实现，一条数据就会在三个Broker上有三份副本，此时如果Leader Broker宕机，那么就直接让其他的Follower Broker自动切换为新的Leader Broker。   基于DLedger技术替换Broker的CommitLog DLedger有一个CommitLog机制，你把数据交给他，他会写入CommitLog磁盘文件里去。用">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-27T13:53:36.867Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;Q23DvF.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;Q23j8f.png">
+<meta property="og:updated_time" content="2019-12-13T14:38:01.537Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;Q23DvF.png">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
+<link rel="canonical" href="http://yoursite.com/2019/12/13/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89%EF%BC%9A%E5%9F%BA%E4%BA%8EDLedger%E6%8A%80%E6%9C%AF%E7%9A%84Broker%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8E%9F%E7%90%86/">
 
 
 <script id="page-configurations">
@@ -74,7 +77,7 @@
   };
 </script>
 
-  <title>RocketMQ（八）：消息发送及消费模式 | LY Blog</title>
+  <title>RocketMQ（十一）：基于DLedger技术的Broker主从同步原理 | LY Blog</title>
   
 
 
@@ -183,7 +186,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/13/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89%EF%BC%9A%E5%9F%BA%E4%BA%8EDLedger%E6%8A%80%E6%9C%AF%E7%9A%84Broker%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -196,7 +199,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          RocketMQ（八）：消息发送及消费模式
+          RocketMQ（十一）：基于DLedger技术的Broker主从同步原理
         </h1>
 
         <div class="post-meta">
@@ -206,7 +209,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-11-27 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-27T19:34:14+08:00">2019-11-27</time>
+              <time title="Created: 2019-12-13 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-13T19:34:14+08:00">2019-12-13</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -232,31 +235,33 @@
 
       
         <ul>
-<li><h4 id="消息发送模式"><a href="#消息发送模式" class="headerlink" title="消息发送模式"></a>消息发送模式</h4><ul>
-<li>同步发送<ul>
-<li>等待MQ返回一个结果，代码才能往下走<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SendResult sendResult = producer.send(msg);</span><br></pre></td></tr></table></figure></li>
+<li><h4 id="Broker高可用架构原理回顾"><a href="#Broker高可用架构原理回顾" class="headerlink" title="Broker高可用架构原理回顾"></a>Broker高可用架构原理回顾</h4><ul>
+<li>基于DLedger实现，一条数据就会在三个Broker上有三份副本，此时如果Leader Broker宕机，那么就直接让其他的Follower Broker自动切换为新的Leader Broker。<br><img src="https://s2.ax1x.com/2019/12/13/Q23DvF.png" alt="avatar"></li>
 </ul>
 </li>
-<li>异步发送<ul>
-<li>设置一步发送失败的时候重试次数为0<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 设置一步发送失败的时候重试次数为0</span><br><span class="line">producer.setRetryTimesWhenSendAsyncFailed(0);</span><br><span class="line"></span><br><span class="line">producer.send(msg, new SendCallback() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(SendResult sendResult) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onException(Throwable throwable) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
+<li><h4 id="基于DLedger技术替换Broker的CommitLog"><a href="#基于DLedger技术替换Broker的CommitLog" class="headerlink" title="基于DLedger技术替换Broker的CommitLog"></a>基于DLedger技术替换Broker的CommitLog</h4><ul>
+<li>DLedger有一个CommitLog机制，你把数据交给他，他会写入CommitLog磁盘文件里去。用DLedger先替换掉原来Broker自己管理的CommitLog，由DLedger来管理CommitLog<br><img src="https://s2.ax1x.com/2019/12/13/Q23j8f.png" alt="avatar"></li>
 </ul>
 </li>
-<li>发送单向消息<ul>
-<li>发送一个消息给MQ，然后代码就往下执行，根本不会关注MQ有没有返回结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">producer.sendOneway(msg);</span><br></pre></td></tr></table></figure>
+<li><h4 id="DLedger基于Raft协议选举Leader-Broker"><a href="#DLedger基于Raft协议选举Leader-Broker" class="headerlink" title="DLedger基于Raft协议选举Leader Broker"></a>DLedger基于Raft协议选举Leader Broker</h4><p>  DLedger是如何从3台机器里选举出来一个Leader的？Broker01、Broker02、Broker03，三台机器互相投票选出来一个人作为Leader。</p>
+<ul>
+<li><p>第一轮选举，Broker01、Broker02、Broker03都投票自己作为Leader，然后把这个投票发送给其他Broker（投票失败）。接着每个人会进入一个随机时间的休眠，比如说Broker01休眠3秒，Broker02休眠5秒，Broker03休眠4秒。</p>
+</li>
+<li><p>第二轮选举</p>
+<ul>
+<li>Broker01必然是先苏醒过来的，直接会继续尝试投票给自己，并且发送自己的选票给别人。</li>
+<li>接着Broker03休眠4秒后苏醒过来，他发现Broker01已经发送来了一个选票是投给Broker01自己的，此时他自己因为没投票，所以会尊重别人的选择，就直接把票投给Broker01了，同时把自己的投票发送给别人。</li>
+<li>接着Broker02苏醒了，他收到了Broker01投票给Broker01自己，收到了Broker03也投票给了Broker01，那么他此时自己是没投票的，直接就会尊重别人的选择，直接就投票给Broker01，并且把自己的投票发送给别人。</li>
+</ul>
+<p>Raft协议中选举leader算法的简单描述，简单来说，他确保有人可以成为Leader的核心机制就是一轮选举不出来Leader的话，就让大家随机休眠一下，先苏醒过来的人会投票给自己，其他人苏醒过后发现自己收到选票了，就会直接投票给那个人。</p>
 </li>
 </ul>
 </li>
-</ul>
-</li>
-<li><h4 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h4><ul>
-<li>Push消费，DefaultMQPushConsumer<ul>
-<li>Broker会主动把消息发送给消费者，消费者是被动的接收Broker推送给过来的消息，然后进行处理。</li>
-</ul>
-</li>
-<li>Pull消费，DefaultMQPullConsumer<ul>
-<li>Broker不会主动推送消息给Consumer，而是消费者主动发送请求到Broker去拉取消息过来。</li>
-</ul>
-</li>
+<li><h4 id="DLedger基于Raft协议进行多副本同步"><a href="#DLedger基于Raft协议进行多副本同步" class="headerlink" title="DLedger基于Raft协议进行多副本同步"></a>DLedger基于Raft协议进行多副本同步</h4><p>  数据同步会分为两个阶段，一个是uncommitted阶段，一个是commited阶段。基于Raft协议实现的两阶段完成的数据同步机制。</p>
+<ul>
+<li>Leader Broker上的DLedger收到一条数据之后，会标记为uncommitted状态，然后他会通过自己的DLedgerServer组件把这个uncommitted数据发送给Follower Broker的DLedgerServer。</li>
+<li>接着Follower Broker的DLedgerServer收到uncommitted消息之后，必须返回一个ack给Leader Broker的DLedgerServer，然后如果Leader Broker收到超过半数的Follower Broker返回ack之后，就会将消息标记为committed状态。</li>
+<li>然后Leader Broker上的DLedgerServer就会发送commited消息给Follower Broker机器的DLedgerServer，让他们也把消息标记为comitted状态。</li>
 </ul>
 </li>
 </ul>
@@ -273,17 +278,14 @@
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2019/11/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9A%E5%B0%8F%E8%A7%84%E6%A8%A1RocketMQ%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E5%8E%8B%E6%B5%8B%EF%BC%8C%E5%90%8C%E6%97%B6%E4%B8%BA%E7%94%9F%E4%BA%A7%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E8%A7%84%E5%88%92/" rel="next" title="RocketMQ（七）：小规模RocketMQ集群进行压测，同时为生产集群进行规划">
-                  <i class="fa fa-chevron-left"></i> RocketMQ（七）：小规模RocketMQ集群进行压测，同时为生产集群进行规划
+                <a href="/2019/12/11/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%EF%BC%89%EF%BC%9ABroker%E6%98%AF%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E6%B6%88%E6%81%AF%E7%9A%84/" rel="next" title="RocketMQ（十）：Broker是如何持久化存储消息的">
+                  <i class="fa fa-chevron-left"></i> RocketMQ（十）：Broker是如何持久化存储消息的
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/" rel="prev" title="RocketMQ（九）：生产者如何发送消息">
-                  RocketMQ（九）：生产者如何发送消息 <i class="fa fa-chevron-right"></i>
-                </a>
             </div>
           </div>
       </footer>
@@ -322,7 +324,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#消息发送模式"><span class="nav-number">1.</span> <span class="nav-text">消息发送模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息消费模式"><span class="nav-number">2.</span> <span class="nav-text">消息消费模式</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Broker高可用架构原理回顾"><span class="nav-number">1.</span> <span class="nav-text">Broker高可用架构原理回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于DLedger技术替换Broker的CommitLog"><span class="nav-number">2.</span> <span class="nav-text">基于DLedger技术替换Broker的CommitLog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DLedger基于Raft协议选举Leader-Broker"><span class="nav-number">3.</span> <span class="nav-text">DLedger基于Raft协议选举Leader Broker</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DLedger基于Raft协议进行多副本同步"><span class="nav-number">4.</span> <span class="nav-text">DLedger基于Raft协议进行多副本同步</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

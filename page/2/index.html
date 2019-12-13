@@ -180,6 +180,204 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/07/RocketMQ/RocketMQ%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ANameServer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/07/RocketMQ/RocketMQ%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ANameServer/" class="post-title-link" itemprop="url">RocketMQ（一）：NameServer</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-11-07 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-07T19:34:14+08:00">2019-11-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="RocketMQ整体架构图"><a href="#RocketMQ整体架构图" class="headerlink" title="RocketMQ整体架构图"></a>RocketMQ整体架构图</h4><ul>
+<li><h5 id="NameServer"><a href="#NameServer" class="headerlink" title="NameServer"></a>NameServer</h5>负责去管理集群里所有Broker的信息，让使用MQ的系统可以通过他感知到集群里有哪些Broker。</li>
+<li><h5 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h5>Broker集群，必须得在多台机器上部署这么一个集群，而且还得用主从架构实现数据多副本存储和高可用。</li>
+<li><h5 id="ProducerClient"><a href="#ProducerClient" class="headerlink" title="ProducerClient"></a>ProducerClient</h5>用户部署的消息发布客户端。</li>
+<li><h5 id="ConsumerClient"><a href="#ConsumerClient" class="headerlink" title="ConsumerClient"></a>ConsumerClient</h5>用户部署的消息订阅客户端。支持push和pull模型，支持广播模式和集群模式。<br><img src="https://s2.ax1x.com/2019/11/06/MCwFtP.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="NameServer部署、注册、获取"><a href="#NameServer部署、注册、获取" class="headerlink" title="NameServer部署、注册、获取"></a>NameServer部署、注册、获取</h4><ul>
+<li>多台服务器部署NameServer，保证高可用。</li>
+<li>每个Broker启动都得向所有的NameServer进行注册，个NameServer都会有一份集群中所有Broker的信息。</li>
+<li>生产者和消费者自己每隔一段时间，定时发送请求到NameServer去拉取最新的集群Broker信息。路由信息，每个系统就知道发送消息或者获取消息去哪台Broker上去进行了，这起到一个把消息路由到一个Broker上的效果，所以一般我们把这种信息叫做路由信息。</li>
+</ul>
+</li>
+<li><h4 id="如果Broker挂了，NameServer是怎么感知到的？"><a href="#如果Broker挂了，NameServer是怎么感知到的？" class="headerlink" title="如果Broker挂了，NameServer是怎么感知到的？"></a>如果Broker挂了，NameServer是怎么感知到的？</h4><ul>
+<li><strong>30s心跳机制：</strong> Broker跟NameServer之间的心跳机制，Broker会每隔30s给所有的NameServer发送心跳，告诉每个NameServer自己目前还活着。</li>
+<li><strong>120s故障感知机制：</strong> NameServer会每隔10s运行一个任务，去检查一下各个Broker的最近一次心跳时间，如果某个Broker超过120s都没发送心跳了，那么就认为这个Broker已经挂掉了。</li>
+</ul>
+</li>
+<li><h4 id="Broker挂了，系统是怎么感知到的？"><a href="#Broker挂了，系统是怎么感知到的？" class="headerlink" title="Broker挂了，系统是怎么感知到的？"></a>Broker挂了，系统是怎么感知到的？</h4><ul>
+<li><strong>ProducerClient容错机制</strong><ul>
+<li>改成发到其他Broker上去</li>
+<li>与宕机的slave备份机器通信</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>  核心：集群化部署、Broker会注册到所有NameServer去、30s心跳机制和120s故障感知机制、生产者和消费者的客户端容错机制</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%89%EF%BC%89%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%89%EF%BC%89%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/" class="post-title-link" itemprop="url">软件工程管理（三）项目计划</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-05-03 20:50:00" itemprop="dateCreated datePublished" datetime="2019-05-03T20:50:00+08:00">2019-05-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
+                    <span itemprop="name">SoftwareManage</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="制定项目计划，三个基本步骤："><a href="#制定项目计划，三个基本步骤：" class="headerlink" title="制定项目计划，三个基本步骤："></a>制定项目计划，三个基本步骤：</h4><ul>
+<li>任务分解<ul>
+<li>大的阶段分成技术方案设计、编码和测试，然后每一个大的阶段下面再进一步细分。</li>
+<li>例如技术方案设计下面再有需求分析、技术方案设计和评审等；而编码阶段则是按照功能模块再进一步拆分。拆分之后，都是小而具体、可交付结果的任务，且不能再进一步拆分。</li>
+</ul>
+</li>
+<li>估算时间<ul>
+<li>任务拆分的越细致，想的越清楚，就能估算的越准确。</li>
+<li>要让负责这个任务的人员参与估算。</li>
+</ul>
+</li>
+<li>排任务路径<ul>
+<li>排路径就是要根据任务之间的关系，资源的占用情况，排出合适的顺序</li>
+<li>排路径是一个相对比较复杂的任务，比如要注意任务的依赖关系，要注意路径的长度，尽可能让几个任务可以并行的进行，避免相互等待。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="设置里程碑"><a href="#设置里程碑" class="headerlink" title="设置里程碑"></a>设置里程碑</h4><ul>
+<li>里程碑的时间点确定后，计划可以灵活调整，但里程碑一般不会轻易改变，因为里程碑代表着一份承诺。这对于项目成员来说，有两个重要的影响，一方面，成员会有很明显的来自 DeadLine 的进度压力，自古 DeadLine 就是第一生产力；另一方面，就是在里程碑完成后，大家会获得一种正面激励。</li>
+</ul>
+</li>
+<li><h4 id="计划跟踪和调整"><a href="#计划跟踪和调整" class="headerlink" title="计划跟踪和调整"></a>计划跟踪和调整</h4><ul>
+<li>跟踪进度的方式<ul>
+<li>项目经理定期收集跟踪：有一个沟通确认的过程，对进度会了解的更准确。</li>
+<li>项目成员主动汇报：可以减少项目经理的收集工作，但有可能不准确。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -905,218 +1103,11 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">Java核心技术-多线程并发</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
-                    <span itemprop="name">Java核心技术</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><strong>JAVA线程实现/创建方式</strong><ul>
-<li><strong>继承 Thread 类</strong><br>Thread 类本质上是实现了 Runnable 接口的一个实例，代表一个线程的实例。启动线程的唯一方 法就是通过 Thread 类的 start()实例方法。start()方法是一个 native 方法，它将启动一个新线 程，并执行 run()方法。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> public class MyThread extends Thread &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  </span><br><span class="line">    MyThread myThread1 = new MyThread();</span><br><span class="line">    myThread1.start();</span><br></pre></td></tr></table></figure></li>
-<li><strong>实现 Runnable 接口</strong><br>如果自己的类已经 extends 另一个类，就无法直接 extends Thread，此时，可以实现一个 Runnable 接口。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyThread extends OtherClass implements Runnable &#123;</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;MyThread.run()&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//启动 MyThread，需要首先实例化一个 Thread，并传入自己的 MyThread 实例:</span><br><span class="line">MyThread myThread = new MyThread();</span><br><span class="line">Thread thread = new Thread(myThread);</span><br><span class="line">thread.start();</span><br><span class="line">//事实上，当传入一个 Runnable target 参数给 Thread 后，Thread 的 run()方法就会调用</span><br><span class="line">target.run()</span><br><span class="line">public void run() &#123;</span><br><span class="line">    if (target != null) &#123;</span><br><span class="line">        target.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>ExecutorService、Callable<Class>、Future 有返回值线程</strong><br>有返回值的任务必须实现 Callable 接口，类似的，无返回值的任务必须 Runnable 接口。执行 Callable 任务后，可以获取一个 Future 的对象，在该对象上调用 get 就可以获取到 Callable 任务 返回的 Object 了，再结合线程池接口 ExecutorService 就可以实现传说中有返回结果的多线程 了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> //创建一个线程池</span><br><span class="line">ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">// 创建多个有返回值的任务</span><br><span class="line">List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">for(i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">    Callable c = new MyCallable(i + &quot; &quot;);</span><br><span class="line">     // 执行任务并获取 Future 对象</span><br><span class="line">    Future f = pool.submit(c);</span><br><span class="line">    list.add(f);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭线程池</span><br><span class="line">pool.shutdown();</span><br><span class="line">// 获取所有并发任务的运行结果</span><br><span class="line">for(Future f : list) &#123;</span><br><span class="line">    // 从 Future 对象上获取任务的返回值，并输出到控制台</span><br><span class="line">    System.out.println(&quot;res:&quot;+ f.get().toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>基于线程池的方式</strong><br>线程和数据库连接这些资源都是非常宝贵的资源。那么每次需要的时候创建，不需要的时候销 毁，是非常浪费资源的。那么我们就可以使用缓存的策略，也就是使用线程池。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> // 创建线程池</span><br><span class="line">ExecutorService threadPool = Executors.newFixedThreadPool(10);</span><br><span class="line">while(true) &#123;</span><br><span class="line">    threadPool.execute(new Runnable() &#123; // 提交多个线程任务，并执行</span><br><span class="line">        @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; is running ..&quot;);</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.sleep(3000);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>4种线程池(Executors不允许使用，使用ThreadPoolExecutor)</strong><br>Java里面线程池的顶级接口是Executor，但严格意义上来说Executor并不是线程池，而是执行线程的工具。真正的线程池接口是ExecutorService。<ul>
-<li><strong>newCachedThreadPool</strong><br>创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。对于执行很多短期异步任务的程序而言，这些线程池通常可提高程序性能。调用 execute 将重用以前构造的线程(如果线程可用)。如果现有线程没有可用的，则创建一个新线程并添加到池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。因此，长时间保持空闲的线程池不会使用任何资源。</li>
-<li><strong>newFixedThreadPool</strong><br>创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。在任意点，在大多数 nThreads 线程会处于处理任务的活动状态。如果在所有线程处于活动状态时提交附加任务，则在有可用线程之前，附加任务将在队列中等待。如果在关闭前的执行期间由于失败而导致任何线程终止，那么一个新线程将代替它执行后续的任务(如果需要)。在某个线程被显式地关闭之前，池中的线程将一直存在。</li>
-<li><strong>newScheduledThreadPool</strong><br>创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool= Executors.newScheduledThreadPool(3); scheduledThreadPool.schedule(newRunnable()&#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟三秒&quot;);</span><br><span class="line">    &#125;&#125;, 3, TimeUnit.SECONDS);</span><br><span class="line">scheduledThreadPool.scheduleAtFixedRate(newRunnable()&#123; </span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        System.out.println(&quot;延迟 1 秒后每三秒执行一次&quot;);</span><br><span class="line">    &#125;&#125;,1,3,TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure></li>
-<li><strong>newSingleThreadExecutor</strong><br>Executors.newSingleThreadExecutor()返回一个线程池(这个线程池只有一个线程),这个线程 池可以在线程死后(或发生异常时)重新启动一个线程来替代原来的线程继续执行下去!</li>
-</ul>
-</li>
-<li><strong>Executors返回线程池对象的弊端</strong><ul>
-<li>newFixedThreadPool和newSingleThreadExecutor<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM</li>
-<li>newCachedThreadPool和scheduledThreadPool<br>允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的线程，从而导致OOM</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E9%9B%86%E5%90%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/Java/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF-%E9%9B%86%E5%90%88/" class="post-title-link" itemprop="url">Java核心技术-集合</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
-                    <span itemprop="name">Java核心技术</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p>集合类存放于 Java.util 包中，主要有 3 种:set(集)、list(列表包含 Queue)和 map(映射)</p>
-<ul>
-<li>Collection:Collection 是集合 List、Set、Queue 的最基本的接口。</li>
-<li>Iterator:迭代器，可以通过迭代器遍历集合中的数据。</li>
-<li>Map:是映射表的基础接口<br><img src="https://s2.ax1x.com/2019/10/27/Krkhtg.png" alt="avatar"></li>
-</ul>
-</li>
-<li><p><strong>List</strong> 是非常常用的数据类型。List 是有序的 Collection。Java List 一共三个实现类: 分别是 ArrayList、Vector 和 LinkedList。</p>
-<ul>
-<li><strong>ArrayList(数组)</strong> 是最常用的 List 实现类，内部是通过数组实现的，它允许对元素进行快速随机访问。数组的缺点是每个元素之间不能有间隔，当数组大小不满足时需要增加存储能力，就要将已经有数组的数据复制到新的存储空间中。当从 ArrayList 的中间位置插入或者删除元素时，需要对数组进行复制、移动、代价比较高。因此，它适合随机查找和遍历，不适合插入和删除。</li>
-<li><strong>Vector(数组实现、线程同步)</strong>  Vector 与 ArrayList 一样，也是通过数组实现的，不同的是它支持线程的同步，即某一时刻只有一个线程能够写 Vector，避免多线程同时写而引起的不一致性，但实现同步需要很高的花费，因此，访问它比访问 ArrayList 慢。</li>
-<li><strong>LinkList(链表)</strong> LinkedList 是用链表结构存储数据的，很适合数据的动态插入和删除，随机访问和遍历速度比较 慢。另外，他还提供了 List 接口中没有定义的方法，专门用于操作表头和表尾元素，可以当作堆 栈、队列和双向队列使用。</li>
-</ul>
-</li>
-<li><p><strong>Set</strong> 注重独一无二的性质,该体系集合用于存储无序(存入和取出的顺序不一定相同)元素，值不能重 复。对象的相等性本质是对象 hashCode 值(java 是依据对象的内存地址计算出的此序号)判断 的，如果想要让两个不同的对象视为相等的，就必须覆盖 Object 的 hashCode 方法和 equals 方 法。</p>
-<ul>
-<li><strong>HashSet(Hash 表)</strong> 哈希表边存放的是哈希值。HashSet 存储元素的顺序并不是按照存入时的顺序(和 List 显然不 同) 而是按照哈希值来存的所以取数据也是按照哈希值取得。元素的哈希值是通过元素的 hashcode 方法来获取的, HashSet 首先判断两个元素的哈希值，如果哈希值一样，接着会比较 equals 方法 如果 equls 结果为 true ，HashSet 就视为同一个元素。如果 equals 为 false 就不是同一个元素。<br>哈希值相同 equals 为 false 的元素是怎么存储呢,就是在同样的哈希值下顺延(可以认为哈希值相 同的元素放在一个哈希桶中)。也就是哈希一样的存一列。</li>
-<li><strong>TreeSet(二叉树)</strong> <ul>
-<li>TreeSet()是使用二叉树的原理对新 add()的对象按照指定的顺序排序(升序、降序)，每增 加一个对象都会进行排序，将对象插入的二叉树指定的位置。</li>
-<li>Integer 和 String 对象都可以进行默认的 TreeSet 排序，而自定义类的对象是不可以的，自 己定义的类必须实现 Comparable 接口，并且覆写相应的 compareTo()函数，才可以正常使 用。</li>
-<li>在覆写 compare()函数时，要返回相应的值才能使 TreeSet 按照一定的规则来排序</li>
-<li>比较此对象与指定对象的顺序。如果该对象小于、等于或大于指定对象，则分别返回负整数、零或正整数。</li>
-</ul>
-</li>
-<li><strong>LinkHashSet(HashSet+LinkedHashMap)</strong><br>  对于 LinkedHashSet 而言，它继承与 HashSet、又基于 LinkedHashMap 来实现的。LinkedHashSet 底层使用 LinkedHashMap 来保存所有元素，它继承与 HashSet，其所有的方法操作上又与 HashSet 相同，因此 LinkedHashSet 的实现上非常简单，只提供了四个构造方法，并通过传递一个标识参数，调用父类的构造器，底层构造一个 LinkedHashMap 来实现，在相关操作上与父类 HashSet 的操作相同，直接调用父类 HashSet 的方法即可。</li>
-</ul>
-</li>
-<li><p><strong>Map</strong> </p>
-<ul>
-<li><p><strong>HashMap(数组+链表+红黑树)</strong><br>HashMap 根据键的 hashCode 值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却是不确定的。 HashMap 最多只允许一条记录的键为 null，允许多条记录的值为 null。HashMap 非线程安全，即任一时刻可以有多个线程同时写 HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections 的 synchronizedMap 方法使HashMap 具有线程安全的能力，或者使用 ConcurrentHashMap。</p>
-</li>
-<li><p><strong>ConcurrentHashMap</strong></p>
-<ul>
-<li><strong>Segment段</strong><br>ConcurrentHashMap 和 HashMap 思路是差不多的，但是因为它支持并发操作，所以要复杂一 些。整个 ConcurrentHashMap 由一个个 Segment 组成，Segment 代表”部分“或”一段“的 意思，所以很多地方都会将其描述为分段锁。</li>
-<li><strong>线程安全(Segment 继承 ReentrantLock 加锁)</strong><br>简单理解就是，ConcurrentHashMap 是一个 Segment 数组，Segment 通过继承 ReentrantLock 来进行加锁，所以每次需要加锁的操作锁住的是一个 segment，这样只要保证每 个 Segment 是线程安全的，也就实现了全局的线程安全。</li>
-<li><strong>并行度(默认 16)</strong><br>concurrencyLevel:并行级别、并发数、Segment 数，怎么翻译不重要，理解它。默认是 16， 也就是说 ConcurrentHashMap 有 16 个 Segments，所以理论上，这个时候，最多可以同时支 持 16 个线程并发写，只要它们的操作分别分布在不同的 Segment 上。这个值可以在初始化的时 候设置为其他值，但是一旦初始化以后，它是不可以扩容的。再具体到每个 Segment 内部，其实 每个 Segment 很像之前介绍的 HashMap，不过它要保证线程安全，所以处理起来要麻烦些。</li>
-</ul>
-</li>
-<li><p><strong>HashTable(线程安全)，已过时，使用ConcurrentHashMap替代</strong><br>HashTable 是遗留类，很多映射的常用功能与 HashMap 类似，不同的是它承自 Dictionary 类，并且是线程安全的，任一时间只有一个线程能写 Hashtable，并发性不如 ConcurrentHashMap，因为 ConcurrentHashMap 引入了分段锁。Hashtable 不建议在新代码中使用，不需要线程安全的场合可以用 HashMap 替换，需要线程安全的场合可以用 ConcurrentHashMap 替换。</p>
-</li>
-<li><p><strong>TreeMap(可排序)</strong><br>TreeMap 实现 SortedMap 接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用 Iterator 遍历 TreeMap 时，得到的记录是排过序的。在使用 TreeMap 时，key 必须实现 Comparable 接口或者在构造 TreeMap 传入自定义的Comparator，否则会在运行时抛出 java.lang.ClassCastException 类型的异常。</p>
-<ul>
-<li><strong>LinkHashMap(记录插入顺序)</strong><br>LinkedHashMap 是 HashMap 的一个子类，保存了记录的插入顺序，在用 Iterator 遍历LinkedHashMap 时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1162,7 +1153,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

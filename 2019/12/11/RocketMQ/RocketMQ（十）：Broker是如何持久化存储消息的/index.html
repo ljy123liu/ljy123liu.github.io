@@ -50,17 +50,19 @@
   };
 </script>
 
-  <meta name="description" content="消息发送模式 同步发送 等待MQ返回一个结果，代码才能往下走1SendResult sendResult = producer.send(msg);   异步发送 设置一步发送失败的时候重试次数为01234567891011121314&#x2F;&#x2F; 设置一步发送失败的时候重试次数为0producer.setRetryTimesWhenSendAsyncFailed(0);producer.send(ms">
+  <meta name="description" content="CommitLog消息顺序写入机制 这个消息直接写入磁盘上的一个日志文件，叫做CommitLog，直接顺序写入这个文件。 CommitLog是很多磁盘文件，每个文件限定最多1GB，Broker收到消息之后就直接追加写入这个文件的末尾。如果一个CommitLog写满了1GB，就会创建一个新的CommitLog文件。   MessageQueue在数据存储中是体现在哪里呢？ 在Broker中，对To">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RocketMQ（八）：消息发送及消费模式">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;27&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F&#x2F;index.html">
+<meta property="og:title" content="RocketMQ（十）：Broker是如何持久化存储消息的">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;11&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%8D%81%EF%BC%89%EF%BC%9ABroker%E6%98%AF%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E6%B6%88%E6%81%AF%E7%9A%84&#x2F;index.html">
 <meta property="og:site_name" content="LY Blog">
-<meta property="og:description" content="消息发送模式 同步发送 等待MQ返回一个结果，代码才能往下走1SendResult sendResult = producer.send(msg);   异步发送 设置一步发送失败的时候重试次数为01234567891011121314&#x2F;&#x2F; 设置一步发送失败的时候重试次数为0producer.setRetryTimesWhenSendAsyncFailed(0);producer.send(ms">
+<meta property="og:description" content="CommitLog消息顺序写入机制 这个消息直接写入磁盘上的一个日志文件，叫做CommitLog，直接顺序写入这个文件。 CommitLog是很多磁盘文件，每个文件限定最多1GB，Broker收到消息之后就直接追加写入这个文件的末尾。如果一个CommitLog写满了1GB，就会创建一个新的CommitLog文件。   MessageQueue在数据存储中是体现在哪里呢？ 在Broker中，对To">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-27T13:53:36.867Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;QgbgkF.png">
+<meta property="og:updated_time" content="2019-12-13T14:10:55.655Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;s2.ax1x.com&#x2F;2019&#x2F;12&#x2F;13&#x2F;QgbgkF.png">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
+<link rel="canonical" href="http://yoursite.com/2019/12/11/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%EF%BC%89%EF%BC%9ABroker%E6%98%AF%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E6%B6%88%E6%81%AF%E7%9A%84/">
 
 
 <script id="page-configurations">
@@ -74,7 +76,7 @@
   };
 </script>
 
-  <title>RocketMQ（八）：消息发送及消费模式 | LY Blog</title>
+  <title>RocketMQ（十）：Broker是如何持久化存储消息的 | LY Blog</title>
   
 
 
@@ -183,7 +185,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/11/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%EF%BC%89%EF%BC%9ABroker%E6%98%AF%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E6%B6%88%E6%81%AF%E7%9A%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -196,7 +198,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          RocketMQ（八）：消息发送及消费模式
+          RocketMQ（十）：Broker是如何持久化存储消息的
         </h1>
 
         <div class="post-meta">
@@ -206,7 +208,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-11-27 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-27T19:34:14+08:00">2019-11-27</time>
+              <time title="Created: 2019-12-11 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-11T19:34:14+08:00">2019-12-11</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -232,29 +234,32 @@
 
       
         <ul>
-<li><h4 id="消息发送模式"><a href="#消息发送模式" class="headerlink" title="消息发送模式"></a>消息发送模式</h4><ul>
-<li>同步发送<ul>
-<li>等待MQ返回一个结果，代码才能往下走<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SendResult sendResult = producer.send(msg);</span><br></pre></td></tr></table></figure></li>
+<li><h4 id="CommitLog消息顺序写入机制"><a href="#CommitLog消息顺序写入机制" class="headerlink" title="CommitLog消息顺序写入机制"></a>CommitLog消息顺序写入机制</h4><ul>
+<li>这个消息直接写入磁盘上的一个日志文件，叫做CommitLog，直接顺序写入这个文件。</li>
+<li>CommitLog是很多磁盘文件，每个文件限定最多1GB，Broker收到消息之后就直接追加写入这个文件的末尾。如果一个CommitLog写满了1GB，就会创建一个新的CommitLog文件。<br><img src="https://s2.ax1x.com/2019/12/13/QgbgkF.png" alt="avatar"></li>
 </ul>
 </li>
-<li>异步发送<ul>
-<li>设置一步发送失败的时候重试次数为0<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 设置一步发送失败的时候重试次数为0</span><br><span class="line">producer.setRetryTimesWhenSendAsyncFailed(0);</span><br><span class="line"></span><br><span class="line">producer.send(msg, new SendCallback() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(SendResult sendResult) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onException(Throwable throwable) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
+<li><h4 id="MessageQueue在数据存储中是体现在哪里呢？"><a href="#MessageQueue在数据存储中是体现在哪里呢？" class="headerlink" title="MessageQueue在数据存储中是体现在哪里呢？"></a>MessageQueue在数据存储中是体现在哪里呢？</h4><ul>
+<li>在Broker中，对Topic下的每个MessageQueue都会有一系列的ConsumeQueue文件。</li>
+<li>在Broker的磁盘上，会有下面这种格式的一系列文件  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// &#123;topic&#125;指代的就是某个Topic，&#123;queueId&#125;指代的就是某个MessageQueue</span><br><span class="line">$HOME/store/consumequeue/&#123;topic&#125;/&#123;queueId&#125;/&#123;fileName&#125;</span><br></pre></td></tr></table></figure></li>
+<li>存储在这台Broker机器上的Topic下的一个MessageQueue，他有很多的ConsumeQueue文件，这个ConsumeQueue文件里存储的是一条消息对应在CommitLog文件中的offset偏移量</li>
 </ul>
 </li>
-<li>发送单向消息<ul>
-<li>发送一个消息给MQ，然后代码就往下执行，根本不会关注MQ有没有返回结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">producer.sendOneway(msg);</span><br></pre></td></tr></table></figure>
-</li>
+<li><h4 id="如何让消息写入CommitLog文件近乎内存写性能"><a href="#如何让消息写入CommitLog文件近乎内存写性能" class="headerlink" title="如何让消息写入CommitLog文件近乎内存写性能"></a>如何让消息写入CommitLog文件近乎内存写性能</h4><p>   Broker是基于OS操作系统的<strong>PageCache</strong>和<strong>顺序写</strong>两个机制，来提升写入CommitLog文件的性能的。</p>
+<ul>
+<li>Broker是以顺序的方式将消息写入CommitLog磁盘文件的，也就是每次写入就是在文件末尾追加一条数据就可以了，对文件进行顺序写的性能要比对文件随机写的性能提升很多。</li>
+<li>数据写入CommitLog文件的时候，其实不是直接写入底层的物理磁盘文件的，而是先进入OS的PageCache内存缓存中，然后后续由OS的后台线程选一个时间，异步化的将OS PageCache内存缓冲中的数据刷入底层的磁盘文件。</li>
 </ul>
 </li>
+<li><h4 id="同步刷盘与异步刷盘"><a href="#同步刷盘与异步刷盘" class="headerlink" title="同步刷盘与异步刷盘"></a>同步刷盘与异步刷盘</h4><ul>
+<li>异步：速率快，有丢失消息风险<ul>
+<li>生产者把消息发送给Broker，Broker将消息写入OS PageCache中，就直接返回ACK给生产者了</li>
+<li>broker宕机，那么必然导致这里的数据丢失，而producer还以为数据已经写入成功了，可能会有数据丢失的风险</li>
 </ul>
 </li>
-<li><h4 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h4><ul>
-<li>Push消费，DefaultMQPushConsumer<ul>
-<li>Broker会主动把消息发送给消费者，消费者是被动的接收Broker推送给过来的消息，然后进行处理。</li>
-</ul>
-</li>
-<li>Pull消费，DefaultMQPullConsumer<ul>
-<li>Broker不会主动推送消息给Consumer，而是消费者主动发送请求到Broker去拉取消息过来。</li>
+<li>同步：速率慢，不会丢消息<ul>
+<li>生产者发送一条消息出去，broker收到了消息，必须直接强制把这个消息刷入底层的物理磁盘文件中，然后才会返回ack给producer，此时你才知道消息写入成功了。</li>
+<li>broker还没有来得及把数据同步刷入磁盘，然后他自己挂了，那么此时对producer来说会感知到消息发送失败了，然后你只要不停的重试发送就可以了，直到有slave broker切换成master broker重新让你可以写入消息，此时可以保证数据是不会丢的。</li>
 </ul>
 </li>
 </ul>
@@ -273,16 +278,16 @@
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2019/11/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9A%E5%B0%8F%E8%A7%84%E6%A8%A1RocketMQ%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E5%8E%8B%E6%B5%8B%EF%BC%8C%E5%90%8C%E6%97%B6%E4%B8%BA%E7%94%9F%E4%BA%A7%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E8%A7%84%E5%88%92/" rel="next" title="RocketMQ（七）：小规模RocketMQ集群进行压测，同时为生产集群进行规划">
-                  <i class="fa fa-chevron-left"></i> RocketMQ（七）：小规模RocketMQ集群进行压测，同时为生产集群进行规划
+                <a href="/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/" rel="next" title="RocketMQ（九）：生产者如何发送消息">
+                  <i class="fa fa-chevron-left"></i> RocketMQ（九）：生产者如何发送消息
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/" rel="prev" title="RocketMQ（九）：生产者如何发送消息">
-                  RocketMQ（九）：生产者如何发送消息 <i class="fa fa-chevron-right"></i>
+                <a href="/2019/12/13/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89%EF%BC%9A%E5%9F%BA%E4%BA%8EDLedger%E6%8A%80%E6%9C%AF%E7%9A%84Broker%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8E%9F%E7%90%86/" rel="prev" title="RocketMQ（十一）：基于DLedger技术的Broker主从同步原理">
+                  RocketMQ（十一）：基于DLedger技术的Broker主从同步原理 <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -322,7 +327,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#消息发送模式"><span class="nav-number">1.</span> <span class="nav-text">消息发送模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息消费模式"><span class="nav-number">2.</span> <span class="nav-text">消息消费模式</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#CommitLog消息顺序写入机制"><span class="nav-number">1.</span> <span class="nav-text">CommitLog消息顺序写入机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MessageQueue在数据存储中是体现在哪里呢？"><span class="nav-number">2.</span> <span class="nav-text">MessageQueue在数据存储中是体现在哪里呢？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何让消息写入CommitLog文件近乎内存写性能"><span class="nav-number">3.</span> <span class="nav-text">如何让消息写入CommitLog文件近乎内存写性能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步刷盘与异步刷盘"><span class="nav-number">4.</span> <span class="nav-text">同步刷盘与异步刷盘</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
