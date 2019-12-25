@@ -180,6 +180,107 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/23/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/23/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84/" class="post-title-link" itemprop="url">RocketMQ（十三）：消费者是根据什么策略从Master或Slave上拉取消息的</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-23 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-23T19:34:14+08:00">2019-12-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="Broker读写分离架构的回顾"><a href="#Broker读写分离架构的回顾" class="headerlink" title="Broker读写分离架构的回顾"></a>Broker读写分离架构的回顾</h4><ul>
+<li>可以从Master Broker拉取，也可以从Slave Broker拉取，具体是要看机器负载来定。</li>
+<li>刚开始消费者都是连接到Master Broker机器去拉取消息的，然后如果Master Broker机器觉得自己负载比较高，就会告诉消费者机器，下次可以从Slave Broker机器去拉取。</li>
+</ul>
+</li>
+<li><h4 id="CommitLog基于os-cache提升写性能的回顾"><a href="#CommitLog基于os-cache提升写性能的回顾" class="headerlink" title="CommitLog基于os cache提升写性能的回顾"></a>CommitLog基于os cache提升写性能的回顾</h4><ul>
+<li>broker收到一条消息，会写入CommitLog文件，但是会先把CommitLog文件中的数据写入os cache(操作系统管理的缓存)中去<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/94175700_1576582578.cn/txdocpic/0/88855d8f1e5ed0f6bf7dc08318f4a4f3/0" alt="avatar"></li>
+<li>os自己有后台线程，过一段时间后会异步把os cache缓存中的CommitLog文件的数据刷入磁盘中去<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/31837100_1576582579.cn/txdocpic/0/7fc487d3a9bba8a44b04d1ae89f61486/0" alt="avatar"></li>
+<li>依靠这个写入CommitLog时先进入os cache缓存，而不是直接进入磁盘的机制，就可以实现broker写CommitLog文件的性能是内存写级别的，这才能实现broker超高的消息接入吞吐量</li>
+</ul>
+</li>
+<li><h4 id="一个很关键的问题：ConsumeQueue文件也是基于os-cache的"><a href="#一个很关键的问题：ConsumeQueue文件也是基于os-cache的" class="headerlink" title="一个很关键的问题：ConsumeQueue文件也是基于os cache的"></a>一个很关键的问题：ConsumeQueue文件也是基于os cache的</h4>  ConsumeQueue会被大量的消费者发送的请求给高并发的读取，所以ConsumeQueue文件的读操作是非常频繁的，而且同时会极大的影响到消费者进行消息拉取的性能和消费吞吐量。<ul>
+<li>ConsumeQueue文件主要是存放消息的offset，所以每个文件很小，30万条消息的offset就只有5.72MB而已。所以实际上ConsumeQueue文件们是不占用多少磁盘空间的，他们整体数据量很小，几乎可以完全被os缓存在内存cache里。</li>
+<li>在消费者机器拉取消息的时候，第一步大量的频繁读取ConsumeQueue文件，几乎可以说就是跟读内存里的数据的性能是一样的，通过这个就可以保证数据消费的高性能以及高吞吐。</li>
+</ul>
+</li>
+<li><h4 id="第二个关键问题：CommitLog是基于os-cache-磁盘一起读取的"><a href="#第二个关键问题：CommitLog是基于os-cache-磁盘一起读取的" class="headerlink" title="第二个关键问题：CommitLog是基于os cache+磁盘一起读取的"></a>第二个关键问题：CommitLog是基于os cache+磁盘一起读取的</h4>  在进行消息拉取的时候，先读os cache里的少量ConsumeQueue的数据，这个性能是极高的，然后第二步就是要根据你读取到的offset去CommitLog里读取消息的完整数据了。<ul>
+<li>os cache对于CommitLog而言，主要是提升文件写入性能，当你不停的写入的时候，很多最新写入的数据都会先停留在os cache里，比如这可能有10GB~20GB的数据。</li>
+<li>os会自动把cache里的比较旧的一些数据刷入磁盘里，腾出来空间给更新写入的数据放在os cache里，所以大部分数据可能多达几个TB都是在磁盘上的。<br>去CommitLog文件里读取完整消息数据的时候，会有两种可能：</li>
+<li>如果你读取的是那种刚刚写入CommitLog的数据，那么大概率他们还停留在os cache中，此时你可以顺利的直接从os cache里读取CommitLog中的数据，这个就是内存读取，性能是很高的。</li>
+<li>你也许读取的是比较早之前写入CommitLog的数据，那些数据早就被刷入磁盘了，已经不在os cache里了，那么此时你就只能从磁盘上的文件里读取了，这个性能是比较差一些的。</li>
+</ul>
+</li>
+<li><h4 id="Master-Broker什么时候会让你从Slave-Broker拉取数据？"><a href="#Master-Broker什么时候会让你从Slave-Broker拉取数据？" class="headerlink" title="Master Broker什么时候会让你从Slave Broker拉取数据？"></a>Master Broker什么时候会让你从Slave Broker拉取数据？</h4><ul>
+<li>假设此时你的broker里已经写入了10万条数据，但是你仅仅拉取了2万条数据。</li>
+<li>假设broker最多只能利用10GB的os cache去放消息，这么多内存最多也就放5万左右的消息。</li>
+<li>拉取消息，broker发现你还有8万条消息没有拉取，这个8万条消息他发现是大于10GB内存最多存放的5万条消息的，那么此时就说明，肯定有3万条消息目前是在磁盘上的，不在os cache内存里。</li>
+<li>broker发现此时你很大概率会从磁盘里加载3万条消息出来！他会认为，出现这种情况，很可能是因为自己作为master broker负载太高了，导致没法及时的把消息给你，所以你落后的进度比较多。我这次给你从磁盘里读取3万条消息，但是下次你还是从slave broker去拉取。</li>
+<li>本质是对比你当前没有拉取消息的数量和大小，以及最多可以存放在os cache内存里的消息的大小，如果你没拉取的消息超过了最大能使用的内存的量，那么说明你后续会频繁从磁盘加载数据，此时就让你从slave broker去加载数据了。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/21/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E8%8E%B7%E5%8F%96%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E4%BB%A5%E5%8F%8A%E8%BF%9B%E8%A1%8CACK/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1076,116 +1177,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/11/RocketMQ/RocketMQ%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">RocketMQ（三）：高可用的消息中间件生产部署架构</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-11 21:05:24" itemprop="dateCreated datePublished" datetime="2019-11-11T21:05:24+08:00">2019-11-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="NameServer集群化部署，保证高可用性"><a href="#NameServer集群化部署，保证高可用性" class="headerlink" title="NameServer集群化部署，保证高可用性"></a>NameServer集群化部署，保证高可用性</h4><ul>
-<li>可以部署在三台机器上，这样可以充分保证NameServer作为路由中心的可用性，哪怕是挂掉两台机器，只要有一个NameServer还在运行，就能保证MQ系统的稳定性。</li>
-<li>每台NameServer实际上都会有完整的集群路由信息，包括所有的Broker节点信息，我们的数据信息，等等。所以只要任何一台NameServer存活下来，就可以保证MQ系统正常运行，不会出现故障。</li>
-</ul>
-</li>
-<li><h4 id="基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）"><a href="#基于Dledger的Broker主从架构部署（RocketMQ-4-5以后）" class="headerlink" title="基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）"></a>基于Dledger的Broker主从架构部署（RocketMQ 4.5以后）</h4><ul>
-<li>Dledger技术是要求至少得是一个Master带两个Slave，这样有三个Broke组成一个Group，也就是作为一个分组来运行。一旦Master宕机，他就可以从剩余的两个Slave中选举出来一个新的Master对外提供服务。</li>
-<li>每个Broker（不论是Master和Slave）都会把自己注册到所有的NameServer上去。（* 注：图中没有画出Slave Broker注册到NameServer）<br><img src="https://s2.ax1x.com/2019/11/13/MYQVpT.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="Broker是如何跟NameServer进行通信的？"><a href="#Broker是如何跟NameServer进行通信的？" class="headerlink" title="Broker是如何跟NameServer进行通信的？"></a>Broker是如何跟NameServer进行通信的？</h4><ul>
-<li>Broker会跟每个NameServer都建立一个TCP长连接，然后定时通过TCP长连接发送心跳请求过去。</li>
-<li>各个NameServer就是通过跟Broker建立好的长连接不断收到心跳包，然后定时检查Broker有没有120s都没发送心跳包，来判定集群里各个Broker到底挂掉了没有。</li>
-</ul>
-</li>
-<li><h4 id="使用MQ的系统都要多机器集群部署"><a href="#使用MQ的系统都要多机器集群部署" class="headerlink" title="使用MQ的系统都要多机器集群部署"></a>使用MQ的系统都要多机器集群部署</h4><ul>
-<li>生产者还是消费者的系统，都应该多机器集群化部署，保证他自己本身作为生产者或者消费者的高可用性。</li>
-</ul>
-</li>
-<li><h4 id="MQ的核心数据模型：Topic（数据集合）"><a href="#MQ的核心数据模型：Topic（数据集合）" class="headerlink" title="MQ的核心数据模型：Topic（数据集合）"></a>MQ的核心数据模型：Topic（数据集合）</h4><ul>
-<li>作为数据集合存放不同类型的消息，比如说订单Topic，商品Topic，等等。</li>
-</ul>
-</li>
-<li><h4 id="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"><a href="#Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）" class="headerlink" title="Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）"></a>Topic作为一个数据集合是怎么在Broker集群里存储的？（分布式存储）</h4><ul>
-<li>创建Topic的时候指定让他里面的数据分散存储在多台Broker机器上，比如一个Topic里有1000万条数据，此时有2台Broker，那么就可以让每台Broker上都放500万条数据。</li>
-<li>每个Broker在进行定时的心跳汇报给NameServer的时候，都会告诉NameServer自己当前的数据情况，比如有哪些Topic的哪些数据在自己这里，这些信息都是属于路由信息的一部分。<br><img src="https://s2.ax1x.com/2019/11/14/MYIJGd.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="生产者系统是如何将消息发送给Broker的？"><a href="#生产者系统是如何将消息发送给Broker的？" class="headerlink" title="生产者系统是如何将消息发送给Broker的？"></a>生产者系统是如何将消息发送给Broker的？</h4><ul>
-<li>在发送消息之前，得先有一个Topic，然后在发送消息的时候，得指定你要发送到哪个Topic里面去。</li>
-<li>跟NameServer建立一个TCP长连接，然后定时从他那里拉取到最新的路由信息，包括集群里有哪些Broker，集群里有哪些Topic，每个Topic都存储在哪些Broker上。</li>
-<li>生产者系统自然就可以通过路由信息找到自己要投递消息的Topic分布在哪几台Broker上，此时可以根据负载均衡算法，从里面选择一台Broke机器出来，比如round robine轮询算法，或者是hash算法，都可以。Broker收到消息之后就会存储在自己本地磁盘里去。</li>
-<li>生产者一定是投递消息到Master Broker的，然后Master Broker会同步数据给他的Slave Brokers，实现一份数据多份副本，保证Master故障的时候数据不丢失，而且可以自动把Slave切换为Master提供服务。<br><img src="https://s2.ax1x.com/2019/11/14/MtfZqO.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="消费者是如何从Broker上拉取消息的？"><a href="#消费者是如何从Broker上拉取消息的？" class="headerlink" title="消费者是如何从Broker上拉取消息的？"></a>消费者是如何从Broker上拉取消息的？</h4><ul>
-<li>消费者系统其实跟生产者系统原理是类似的，他们也会跟NameServer建立长连接，然后拉取路由信息，接着找到自己要获取消息的Topic在哪几台Broker上，就可以跟Broker建立长连接，从里面拉取消息了。</li>
-<li>消费者系统可能会从Master Broker拉取消息，也可能从Slave Broker拉取消息，都有可能。<br><img src="https://s2.ax1x.com/2019/11/14/Mtfzlt.png" alt="avatar"></li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1236,7 +1227,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

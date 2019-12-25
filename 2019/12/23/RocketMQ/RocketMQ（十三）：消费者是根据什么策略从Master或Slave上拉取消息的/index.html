@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.2',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="Broker读写分离架构的回顾 可以从Master Broker拉取，也可以从Slave Broker拉取，具体是要看机器负载来定。 刚开始消费者都是连接到Master Broker机器去拉取消息的，然后如果Master Broker机器觉得自己负载比较高，就会告诉消费者机器，下次可以从Slave Broker机器去拉取。   CommitLog基于os cache提升写性能的回顾 broker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ（十三）：消费者是根据什么策略从Master或Slave上拉取消息的">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;23&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84&#x2F;index.html">
+<meta property="og:site_name" content="LY Blog">
+<meta property="og:description" content="Broker读写分离架构的回顾 可以从Master Broker拉取，也可以从Slave Broker拉取，具体是要看机器负载来定。 刚开始消费者都是连接到Master Broker机器去拉取消息的，然后如果Master Broker机器觉得自己负载比较高，就会告诉消费者机器，下次可以从Slave Broker机器去拉取。   CommitLog基于os cache提升写性能的回顾 broker">
+<meta property="og:locale" content="zh">
+<meta property="og:image" content="http:&#x2F;&#x2F;wechatapppro-1252524126.file.myqcloud.com&#x2F;image&#x2F;ueditor&#x2F;94175700_1576582578.cn&#x2F;txdocpic&#x2F;0&#x2F;88855d8f1e5ed0f6bf7dc08318f4a4f3&#x2F;0">
+<meta property="og:image" content="http:&#x2F;&#x2F;wechatapppro-1252524126.file.myqcloud.com&#x2F;image&#x2F;ueditor&#x2F;31837100_1576582579.cn&#x2F;txdocpic&#x2F;0&#x2F;7fc487d3a9bba8a44b04d1ae89f61486&#x2F;0">
+<meta property="og:updated_time" content="2019-12-25T05:04:19.280Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;wechatapppro-1252524126.file.myqcloud.com&#x2F;image&#x2F;ueditor&#x2F;94175700_1576582578.cn&#x2F;txdocpic&#x2F;0&#x2F;88855d8f1e5ed0f6bf7dc08318f4a4f3&#x2F;0">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/23/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>RocketMQ（十三）：消费者是根据什么策略从Master或Slave上拉取消息的 | LY Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="bg_content">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">LY Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/23/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RocketMQ（十三）：消费者是根据什么策略从Master或Slave上拉取消息的
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-23 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-23T19:34:14+08:00">2019-12-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li><h4 id="Broker读写分离架构的回顾"><a href="#Broker读写分离架构的回顾" class="headerlink" title="Broker读写分离架构的回顾"></a>Broker读写分离架构的回顾</h4><ul>
+<li>可以从Master Broker拉取，也可以从Slave Broker拉取，具体是要看机器负载来定。</li>
+<li>刚开始消费者都是连接到Master Broker机器去拉取消息的，然后如果Master Broker机器觉得自己负载比较高，就会告诉消费者机器，下次可以从Slave Broker机器去拉取。</li>
+</ul>
+</li>
+<li><h4 id="CommitLog基于os-cache提升写性能的回顾"><a href="#CommitLog基于os-cache提升写性能的回顾" class="headerlink" title="CommitLog基于os cache提升写性能的回顾"></a>CommitLog基于os cache提升写性能的回顾</h4><ul>
+<li>broker收到一条消息，会写入CommitLog文件，但是会先把CommitLog文件中的数据写入os cache(操作系统管理的缓存)中去<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/94175700_1576582578.cn/txdocpic/0/88855d8f1e5ed0f6bf7dc08318f4a4f3/0" alt="avatar"></li>
+<li>os自己有后台线程，过一段时间后会异步把os cache缓存中的CommitLog文件的数据刷入磁盘中去<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/31837100_1576582579.cn/txdocpic/0/7fc487d3a9bba8a44b04d1ae89f61486/0" alt="avatar"></li>
+<li>依靠这个写入CommitLog时先进入os cache缓存，而不是直接进入磁盘的机制，就可以实现broker写CommitLog文件的性能是内存写级别的，这才能实现broker超高的消息接入吞吐量</li>
+</ul>
+</li>
+<li><h4 id="一个很关键的问题：ConsumeQueue文件也是基于os-cache的"><a href="#一个很关键的问题：ConsumeQueue文件也是基于os-cache的" class="headerlink" title="一个很关键的问题：ConsumeQueue文件也是基于os cache的"></a>一个很关键的问题：ConsumeQueue文件也是基于os cache的</h4>  ConsumeQueue会被大量的消费者发送的请求给高并发的读取，所以ConsumeQueue文件的读操作是非常频繁的，而且同时会极大的影响到消费者进行消息拉取的性能和消费吞吐量。<ul>
+<li>ConsumeQueue文件主要是存放消息的offset，所以每个文件很小，30万条消息的offset就只有5.72MB而已。所以实际上ConsumeQueue文件们是不占用多少磁盘空间的，他们整体数据量很小，几乎可以完全被os缓存在内存cache里。</li>
+<li>在消费者机器拉取消息的时候，第一步大量的频繁读取ConsumeQueue文件，几乎可以说就是跟读内存里的数据的性能是一样的，通过这个就可以保证数据消费的高性能以及高吞吐。</li>
+</ul>
+</li>
+<li><h4 id="第二个关键问题：CommitLog是基于os-cache-磁盘一起读取的"><a href="#第二个关键问题：CommitLog是基于os-cache-磁盘一起读取的" class="headerlink" title="第二个关键问题：CommitLog是基于os cache+磁盘一起读取的"></a>第二个关键问题：CommitLog是基于os cache+磁盘一起读取的</h4>  在进行消息拉取的时候，先读os cache里的少量ConsumeQueue的数据，这个性能是极高的，然后第二步就是要根据你读取到的offset去CommitLog里读取消息的完整数据了。<ul>
+<li>os cache对于CommitLog而言，主要是提升文件写入性能，当你不停的写入的时候，很多最新写入的数据都会先停留在os cache里，比如这可能有10GB~20GB的数据。</li>
+<li>os会自动把cache里的比较旧的一些数据刷入磁盘里，腾出来空间给更新写入的数据放在os cache里，所以大部分数据可能多达几个TB都是在磁盘上的。<br>去CommitLog文件里读取完整消息数据的时候，会有两种可能：</li>
+<li>如果你读取的是那种刚刚写入CommitLog的数据，那么大概率他们还停留在os cache中，此时你可以顺利的直接从os cache里读取CommitLog中的数据，这个就是内存读取，性能是很高的。</li>
+<li>你也许读取的是比较早之前写入CommitLog的数据，那些数据早就被刷入磁盘了，已经不在os cache里了，那么此时你就只能从磁盘上的文件里读取了，这个性能是比较差一些的。</li>
+</ul>
+</li>
+<li><h4 id="Master-Broker什么时候会让你从Slave-Broker拉取数据？"><a href="#Master-Broker什么时候会让你从Slave-Broker拉取数据？" class="headerlink" title="Master Broker什么时候会让你从Slave Broker拉取数据？"></a>Master Broker什么时候会让你从Slave Broker拉取数据？</h4><ul>
+<li>假设此时你的broker里已经写入了10万条数据，但是你仅仅拉取了2万条数据。</li>
+<li>假设broker最多只能利用10GB的os cache去放消息，这么多内存最多也就放5万左右的消息。</li>
+<li>拉取消息，broker发现你还有8万条消息没有拉取，这个8万条消息他发现是大于10GB内存最多存放的5万条消息的，那么此时就说明，肯定有3万条消息目前是在磁盘上的，不在os cache内存里。</li>
+<li>broker发现此时你很大概率会从磁盘里加载3万条消息出来！他会认为，出现这种情况，很可能是因为自己作为master broker负载太高了，导致没法及时的把消息给你，所以你落后的进度比较多。我这次给你从磁盘里读取3万条消息，但是下次你还是从slave broker去拉取。</li>
+<li>本质是对比你当前没有拉取消息的数量和大小，以及最多可以存放在os cache内存里的消息的大小，如果你没拉取的消息超过了最大能使用的内存的量，那么说明你后续会频繁从磁盘加载数据，此时就让你从slave broker去加载数据了。</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/12/21/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E8%8E%B7%E5%8F%96%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E4%BB%A5%E5%8F%8A%E8%BF%9B%E8%A1%8CACK/" rel="next" title="RocketMQ（十二）：消费者获取消息处理以及进行ACK">
+                  <i class="fa fa-chevron-left"></i> RocketMQ（十二）：消费者获取消息处理以及进行ACK
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Broker读写分离架构的回顾"><span class="nav-number">1.</span> <span class="nav-text">Broker读写分离架构的回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CommitLog基于os-cache提升写性能的回顾"><span class="nav-number">2.</span> <span class="nav-text">CommitLog基于os cache提升写性能的回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一个很关键的问题：ConsumeQueue文件也是基于os-cache的"><span class="nav-number">3.</span> <span class="nav-text">一个很关键的问题：ConsumeQueue文件也是基于os cache的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第二个关键问题：CommitLog是基于os-cache-磁盘一起读取的"><span class="nav-number">4.</span> <span class="nav-text">第二个关键问题：CommitLog是基于os cache+磁盘一起读取的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Master-Broker什么时候会让你从Slave-Broker拉取数据？"><span class="nav-number">5.</span> <span class="nav-text">Master Broker什么时候会让你从Slave Broker拉取数据？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="刘勇"
+    src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">刘勇</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘勇</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/dynamic_bg.js"></script>
+  <script src="/lib/live2d/L2Dwidget.min.js"></script>
+<script type="text/javascript">
+  L2Dwidget.init({
+    model: {
+      jsonPath: '/lib/live2d/tororo/assets/tororo.model.json',
+    },
+    display: {
+      superSample: 2,
+      width: 100,
+      height: 100,
+      position: 'right',
+      hOffset: 0,
+      vOffset: 0,
+    },
+    mobile: {
+      show: true,
+      scale: 1,
+      motion: true,
+    },
+    react: {
+      opacityDefault: 0.8,
+      opacityOnHover: 0.2,
+    }
+  })
+</script>
+
+</body>
+</html>
