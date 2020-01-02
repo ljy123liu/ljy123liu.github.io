@@ -180,6 +180,109 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/27/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89%EF%BC%9A%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9ARocketMQ%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/27/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89%EF%BC%9A%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9ARocketMQ%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">RocketMQ（十四）：发送消息零丢失方案：RocketMQ事务消息的实现流程分析</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-27 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-27T19:34:14+08:00">2019-12-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="发送half消息到MQ去，试探一下MQ是否正常"><a href="#发送half消息到MQ去，试探一下MQ是否正常" class="headerlink" title="发送half消息到MQ去，试探一下MQ是否正常"></a>发送half消息到MQ去，试探一下MQ是否正常</h4><ul>
+<li>首先作为我们的订单系统而言，假设他收到了一个订单支付成功的通知之后，他必然是需要在自己的订单数据库里做一些增删改操作的，比如更新订单状态之类的。<ul>
+<li>在基于RocketMQ的事务消息机制中，我们首先要让订单系统去发送一条half消息到MQ去，这个half消息本质就是一个订单支付成功的消息，只不过你可以理解为他这个消息的状态是half状态，这个时候红包系统是看不见这个half消息的。然后我们去等待接收这个half消息写入成功的响应通知。</li>
+<li>假设你二话不说让订单系统直接做了本地的数据库操作，比如订单状态都更新为了已完成，然后你再发送消息给MQ，结果报出一堆异常，发现MQ挂了。这个时候，必然导致你没法通过消息通知到红包系统去派发红包，那用户一定会发现自己订单支付了，结果红包没收到。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="万一要是half消息写入失败了呢？"><a href="#万一要是half消息写入失败了呢？" class="headerlink" title="万一要是half消息写入失败了呢？"></a>万一要是half消息写入失败了呢？</h4><ul>
+<li>可能你发现报错了，可能MQ就挂了，或者这个时候网络就是故障了，所以导致你的half消息都没发送成功，总之你现在肯定没法跟MQ通信了。</li>
+<li>这个时候你的订单系统就应该执行一系列的回滚操作，比如对订单状态做一个更新，让状态变成“关闭交易”，同时通知支付系统自动进行退款，这才是正确的做法。</li>
+</ul>
+</li>
+<li><h4 id="half消息成功之后，订单系统完成自己的任务"><a href="#half消息成功之后，订单系统完成自己的任务" class="headerlink" title="half消息成功之后，订单系统完成自己的任务"></a>half消息成功之后，订单系统完成自己的任务</h4><ul>
+<li>这个时候你的订单系统就应该在自己本地的数据库里执行一些增删改操作了，因为一旦half消息写成功了，就说明MQ肯定已经收到这条消息了，MQ还活着，而且目前你是可以跟MQ正常沟通的。</li>
+</ul>
+</li>
+<li><h4 id="如果订单系统的本地事务执行失败了怎么办？"><a href="#如果订单系统的本地事务执行失败了怎么办？" class="headerlink" title="如果订单系统的本地事务执行失败了怎么办？"></a>如果订单系统的本地事务执行失败了怎么办？</h4><ul>
+<li>比如订单系统的数据库当时也有网络异常，或者数据库挂了，总而言之，就是你想把订单更新为“已完成”这个状态，是干不成了。<br>这个时候其实也很简单，直接就是让订单系统发送一个rollback请求给MQ就可以了。这个意思就是说，你可以把之前我发给你的half消息给删除掉了，因为我自己这里都出问题了，已经无力跟你继续后续的流程了。</li>
+<li>当然你发送rollback请求给MQ删除那个half消息之后，你的订单系统就必须走后续的回退流程了，就是通知支付系统退款。</li>
+<li>当然这里可能还有一些订单系统自己的高可用降级的机制需要考虑，比如数据库无法更新了，此时你可能需要在机器本地磁盘文件里写入订单支付失败的记录。然后你可以开一个后台线程在MySQL数据库恢复之后 ，再把订单状态更新为“已关闭”。</li>
+</ul>
+</li>
+<li><h4 id="如果订单系统完成了本地事务之后，接着干什么？"><a href="#如果订单系统完成了本地事务之后，接着干什么？" class="headerlink" title="如果订单系统完成了本地事务之后，接着干什么？"></a>如果订单系统完成了本地事务之后，接着干什么？</h4><ul>
+<li>如果订单系统成功完成了本地的事务操作，比如把订单状态都更新为“已完成”了，此时你就可以发送一个commit请求给MQ，要求让MQ对之前的half消息进行commit操作，让红包系统可以看见这个订单支付成功消息。</li>
+</ul>
+</li>
+<li><h4 id="让流程严谨一些：如果发送half消息成功了，但是没收到响应呢？"><a href="#让流程严谨一些：如果发送half消息成功了，但是没收到响应呢？" class="headerlink" title="让流程严谨一些：如果发送half消息成功了，但是没收到响应呢？"></a>让流程严谨一些：如果发送half消息成功了，但是没收到响应呢？</h4><ul>
+<li>我们没收到响应，可能就会网络超时报错，也可能直接有其他的异常错误，这个时候订单系统会误以为是发送half消息到MQ失败了，订单系统就直接会执行退款流程了，订单状态也会标记为“已关闭”。</li>
+<li>其实RocketMQ这里有一个补偿流程，他会去扫描自己处于half状态的消息，如果我们一直没有对这个消息执行commit/rollback操作，超过了一定的时间，他就会回调你的订单系统的一个接口。他会问问你：这个消息到底怎么回事？你到底是打算commit这个消息还是要rollback这个消息？</li>
+<li>这个时候我们的订单系统就得去查一下数据库，看看这个订单当前的状态，一下发现订单状态是“已关闭”，此时就知道，你必然得发送rollback请求给MQ去删除之前那个half消息了！</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/23/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89%EF%BC%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%98%AF%E6%A0%B9%E6%8D%AE%E4%BB%80%E4%B9%88%E7%AD%96%E7%95%A5%E4%BB%8EMaster%E6%88%96Slave%E4%B8%8A%E6%8B%89%E5%8F%96%E6%B6%88%E6%81%AF%E7%9A%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1084,99 +1187,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/RocketMQ/RocketMQ%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9ARocketMQ%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/12/RocketMQ/RocketMQ%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9ARocketMQ%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">RocketMQ（四）：RocketMQ集群部署</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-12 21:05:24" itemprop="dateCreated datePublished" datetime="2019-11-12T21:05:24+08:00">2019-11-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h4><ul>
-<li>安装JDK，同时要在环境变量中设置Java_HOME</li>
-<li>进入apache-rocketmq目录，编辑三个文件，bin/runserver.sh，bin/runbroker.sh，bin/tools.sh。第二行和第三行都删了，同时将第一行的值修改为你自己的JDK的主目录<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[ ! -e &quot;$JAVA_HOME/bin/java&quot; ] &amp;&amp; JAVA_HOME=$HOME/jdk/java</span><br><span class="line"></span><br><span class="line">[ ! -e &quot;$JAVA_HOME/bin/java&quot; ] &amp;&amp; JAVA_HOME=/usr/java</span><br><span class="line"></span><br><span class="line">[ ! -e &quot;$JAVA_HOME/bin/java&quot; ] &amp;&amp; error_exit &quot;Please set the JAVA_HOME variable in your environment, We need java(x64)!&quot;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><h4 id="单台机器快速部署RocketMQ"><a href="#单台机器快速部署RocketMQ" class="headerlink" title="单台机器快速部署RocketMQ"></a>单台机器快速部署RocketMQ</h4>  可以部署在三台机器上，这样可以充分保证NameServer作为路由中心的可用性，哪怕是挂掉两台机器，只要有一个NameServer还在运行，就能保证MQ系统的稳定性。<br>  每台NameServer实际上都会有完整的集群路由信息，包括所有的Broker节点信息，我们的数据信息，等等。所以只要任何一台NameServer存活下来，就可以保证MQ系统正常运行，不会出现故障。<ul>
-<li>集群启动、关闭<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sh bin/dledger/fast-try.sh start</span><br><span class="line">sh bin/dledger/fast-try.sh stop</span><br></pre></td></tr></table></figure>
-这个命令会在当前这台机器上启动一个NameServer和三个Broker，三个Broker其中一个是Master，另外两个是Slave，瞬间就可以组成一个最小可用的RocketMQ集群。</li>
-<li>sh bin/mqadmin clusterList -n 127.0.0.1:9876<br>检查一下RocketMQ集群的状态，三行记录，说是一个RaftCluster，Broker名称叫做RaftNode00，然后BID是0、1、2，也有可能是0、1、3。BID为0的就是Master，BID大于0的就都是Slave。</li>
-<li>lsof -i:30921，找出来占用30921端口的进程PID，接着就用kill -9的命令给他杀了。</li>
-<li>sh bin/mqadmin clusterList -n 127.0.0.1:9876<br>此时就会发现作为Leader的BID为0的节点，变成另外一个Broker了，这就是说Slave切换为Master了。</li>
-</ul>
-</li>
-<li><h5 id="三台NameServer的部署"><a href="#三台NameServer的部署" class="headerlink" title="三台NameServer的部署"></a>三台NameServer的部署</h5><ul>
-<li>nohup sh mqnamesrv &amp;<br>NameServer监听的接口默认是9876，所以在三台机器上都启动了NameServer，那么他们的端口都是9876，此时启动了三个NameServer。</li>
-</ul>
-</li>
-<li><h5 id="一组Broker集群的部署"><a href="#一组Broker集群的部署" class="headerlink" title="一组Broker集群的部署"></a>一组Broker集群的部署</h5><ul>
-<li>nohup sh bin/mqbroker -c conf/dledger/broker-n0.conf &amp;<br>第一个Broker的配置文件是broker-n0.conf，第二个broker的配置文件可以是Broker-n1.conf，第三个Broker的配置文件可以是broker-n2.conf。</li>
-<li>broker-n0.conf配置详解<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"># 这个是集群的名称，你整个broker集群都可以用这个名称</span><br><span class="line">brokerClusterName = RaftCluster</span><br><span class="line"># 这是Broker的名称，比如你有一个Master和两个Slave，那么他们的Broker名称必须是一样的，因为他们三个是一个分组，如果你有另外一组Master和两个Slave，你可以给他们起个别的名字，比如说RaftNode01</span><br><span class="line">brokerName=RaftNode00</span><br><span class="line"># 这个就是你的Broker监听的端口号，如果每台机器上就部署一个Broker，可以考虑就用这个端口号，不用修改</span><br><span class="line">listenPort=30911</span><br><span class="line"># 这里是配置NameServer的地址，如果你有很多个NameServer的话，可以在这里写入多个NameServer的地址</span><br><span class="line">namesrvAddr=127.0.0.1:9876;127.0.0.2:9876;</span><br><span class="line"># 下面两个目录是存放Broker数据的地方，你可以换成别的目录，类似于是/usr/local/rocketmq/node00之类的</span><br><span class="line">storePathRootDir=/tmp/rmqstore/node00</span><br><span class="line">storePathCommitLog=/tmp/rmqstore/node00/commitlog</span><br><span class="line"># 这个是非常关键的一个配置，就是是否启用DLeger技术，这个必须是true</span><br><span class="line">enableDLegerCommitLog=true</span><br><span class="line"># 这个一般建议和Broker名字保持一致，一个Master加两个Slave会组成一个Group</span><br><span class="line">dLegerGroup=RaftNode00</span><br><span class="line"># 这个很关键，对于每一组Broker，你得保证他们的这个配置是一样的，在这里要写出来一个组里有哪几个Broker，比如在这里假设有三台机器部署了Broker，要让他们作为一个组，那么在这里就得写入他们三个的ip地址和监听的端口号</span><br><span class="line">dLegerPeers=n0-127.0.0.1:40911;n1-127.0.0.1:40912;n2-127.0.0.1:40913</span><br><span class="line"># 这个是代表了一个Broker在组里的id，一般就是n0、n1、n2之类的，这个你得跟上面的dLegerPeers中的n0、n1、n2相匹配</span><br><span class="line">dLegerSelfId=n0</span><br><span class="line"># 这个是发送消息的线程数量，一般建议你配置成跟你的CPU核数一样，比如我们的机器假设是24核的，那么这里就修改成24核</span><br><span class="line">sendMessageThreadPoolNums=24</span><br></pre></td></tr></table></figure></li>
-<li>最关键的是，Broker是分为多组的，每一组是三个Broker，一个Master和两个Slave。对每一组Broker，他们的Broker名称、Group名称都是一样的，然后你得给他们配置好一样的dLegerPeers（里面是组内三台Broker的地址）。然后他们得配置好对应的NameServer的地址，最后还有就是每个Broker有自己的ID，在组内是唯一的就可以了，比如说不同的组里都有一个ID为n0的Broker。</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1227,7 +1237,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-count">25</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1259,7 +1269,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2019</span>
+  <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
