@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.2',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="让属于同一个订单的binlog进入一个MessageQueue 比如对一个订单，我们先后执行了insert、update两条SQL语句，也就对应了2个binlog。 我们这里可以采用取模的方法，比如有一个订单id是1100，那么他可能有2个binlog，对这两个binlog，我们必须要用订单id=1100对MessageQueue的数量进行取模，比如MessageQueue一共有15个，那么此时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ（十九）：在RocketMQ中，如何解决订单数据库同步的消息乱序问题？">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;15&#x2F;RocketMQ&#x2F;RocketMQ%EF%BC%88%E5%8D%81%E4%B9%9D%EF%BC%89%EF%BC%9A%E5%9C%A8RocketMQ%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%AE%A2%E5%8D%95%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8C%E6%AD%A5%E7%9A%84%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%E9%97%AE%E9%A2%98%EF%BC%9F&#x2F;index.html">
+<meta property="og:site_name" content="LY Blog">
+<meta property="og:description" content="让属于同一个订单的binlog进入一个MessageQueue 比如对一个订单，我们先后执行了insert、update两条SQL语句，也就对应了2个binlog。 我们这里可以采用取模的方法，比如有一个订单id是1100，那么他可能有2个binlog，对这两个binlog，我们必须要用订单id=1100对MessageQueue的数量进行取模，比如MessageQueue一共有15个，那么此时">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-01-15T13:29:23.593Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/01/15/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B9%9D%EF%BC%89%EF%BC%9A%E5%9C%A8RocketMQ%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%AE%A2%E5%8D%95%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8C%E6%AD%A5%E7%9A%84%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%E9%97%AE%E9%A2%98%EF%BC%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>RocketMQ（十九）：在RocketMQ中，如何解决订单数据库同步的消息乱序问题？ | LY Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="bg_content">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">LY Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/15/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B9%9D%EF%BC%89%EF%BC%9A%E5%9C%A8RocketMQ%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%AE%A2%E5%8D%95%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8C%E6%AD%A5%E7%9A%84%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%E9%97%AE%E9%A2%98%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RocketMQ（十九）：在RocketMQ中，如何解决订单数据库同步的消息乱序问题？
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-15 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-15T19:34:14+08:00">2020-01-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li><h4 id="让属于同一个订单的binlog进入一个MessageQueue"><a href="#让属于同一个订单的binlog进入一个MessageQueue" class="headerlink" title="让属于同一个订单的binlog进入一个MessageQueue"></a>让属于同一个订单的binlog进入一个MessageQueue</h4><ul>
+<li>比如对一个订单，我们先后执行了insert、update两条SQL语句，也就对应了2个binlog。</li>
+<li>我们这里可以采用取模的方法，比如有一个订单id是1100，那么他可能有2个binlog，对这两个binlog，我们必须要用订单id=1100对MessageQueue的数量进行取模，比如MessageQueue一共有15个，那么此时订单id=1100对15取模，就是5。也就是说，凡是订单id=1100的binlog，都应该进入位置为5的MessageQueue中去！</li>
+</ul>
+</li>
+<li><h4 id="Consumer有序处理一个订单的binlog"><a href="#Consumer有序处理一个订单的binlog" class="headerlink" title="Consumer有序处理一个订单的binlog"></a>Consumer有序处理一个订单的binlog</h4><ul>
+<li>一个Consumer可以处理多个MessageQueue的消息，但是一个MessageQueue只能交给一个Consumer来进行处理，所以一个订单的binlog只会有序的交给一个Consumer来进行处理！</li>
+</ul>
+</li>
+<li><h4 id="这就完了吗？没有，万一消息处理失败了可以走重试队列吗？"><a href="#这就完了吗？没有，万一消息处理失败了可以走重试队列吗？" class="headerlink" title="这就完了吗？没有，万一消息处理失败了可以走重试队列吗？"></a>这就完了吗？没有，万一消息处理失败了可以走重试队列吗？</h4><ul>
+<li>绝对不是，在Consumer处理消息的时候，可能会因为底层存储挂了导致消息处理失败，之前我们说过，此时可以返回RECONSUME_LATER状态，然后broker会过一会儿自动给我们重试。</li>
+<li>那绝对是不行的，因为如果你的consumer获取到订单的一个insert binlog，结果处理失败了，此时返回了RECONSUME_LATER，那么这条消息会进入重试队列，过一会儿才会交给你重试。</li>
+<li>但是此时broker会直接把下一条消息，也就是这个订单的update binlog交给你来处理，此时万一你执行成功了，就根本没有数据可以更新！又会出现消息乱序的问题。</li>
+<li>所以对于有序消息的方案中，如果你遇到消息处理失败的场景，就必须返回SUSPEND_CURRENT_QUEUE_A_MOMENT这个状态，意思是先等一会儿，一会儿再继续处理这批消息，而不能把这批消息放入重试队列去，然后直接处理下一批消息。</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2020/01/14/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%85%AB%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9F%BA%E4%BA%8E%20RocketMQ%20%E8%BF%9B%E8%A1%8C%E8%AE%A2%E5%8D%95%E5%BA%93%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%97%B6%E4%BC%9A%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%EF%BC%9F%E7%9A%84%E5%89%AF%E6%9C%AC/" rel="next" title="RocketMQ（十八）：为什么基于 RocketMQ 进行订单库数据同步时会消息乱序？">
+                  <i class="fa fa-chevron-left"></i> RocketMQ（十八）：为什么基于 RocketMQ 进行订单库数据同步时会消息乱序？
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#让属于同一个订单的binlog进入一个MessageQueue"><span class="nav-number">1.</span> <span class="nav-text">让属于同一个订单的binlog进入一个MessageQueue</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Consumer有序处理一个订单的binlog"><span class="nav-number">2.</span> <span class="nav-text">Consumer有序处理一个订单的binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#这就完了吗？没有，万一消息处理失败了可以走重试队列吗？"><span class="nav-number">3.</span> <span class="nav-text">这就完了吗？没有，万一消息处理失败了可以走重试队列吗？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="刘勇"
+    src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">刘勇</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘勇</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/dynamic_bg.js"></script>
+  <script src="/lib/live2d/L2Dwidget.min.js"></script>
+<script type="text/javascript">
+  L2Dwidget.init({
+    model: {
+      jsonPath: '/lib/live2d/tororo/assets/tororo.model.json',
+    },
+    display: {
+      superSample: 2,
+      width: 100,
+      height: 100,
+      position: 'right',
+      hOffset: 0,
+      vOffset: 0,
+    },
+    mobile: {
+      show: true,
+      scale: 1,
+      motion: true,
+    },
+    react: {
+      opacityDefault: 0.8,
+      opacityOnHover: 0.2,
+    }
+  })
+</script>
+
+</body>
+</html>

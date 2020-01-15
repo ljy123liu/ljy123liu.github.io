@@ -180,6 +180,430 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/15/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B9%9D%EF%BC%89%EF%BC%9A%E5%9C%A8RocketMQ%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%AE%A2%E5%8D%95%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8C%E6%AD%A5%E7%9A%84%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%E9%97%AE%E9%A2%98%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/15/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B9%9D%EF%BC%89%EF%BC%9A%E5%9C%A8RocketMQ%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%AE%A2%E5%8D%95%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8C%E6%AD%A5%E7%9A%84%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%E9%97%AE%E9%A2%98%EF%BC%9F/" class="post-title-link" itemprop="url">RocketMQ（十九）：在RocketMQ中，如何解决订单数据库同步的消息乱序问题？</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-15 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-15T19:34:14+08:00">2020-01-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="让属于同一个订单的binlog进入一个MessageQueue"><a href="#让属于同一个订单的binlog进入一个MessageQueue" class="headerlink" title="让属于同一个订单的binlog进入一个MessageQueue"></a>让属于同一个订单的binlog进入一个MessageQueue</h4><ul>
+<li>比如对一个订单，我们先后执行了insert、update两条SQL语句，也就对应了2个binlog。</li>
+<li>我们这里可以采用取模的方法，比如有一个订单id是1100，那么他可能有2个binlog，对这两个binlog，我们必须要用订单id=1100对MessageQueue的数量进行取模，比如MessageQueue一共有15个，那么此时订单id=1100对15取模，就是5。也就是说，凡是订单id=1100的binlog，都应该进入位置为5的MessageQueue中去！</li>
+</ul>
+</li>
+<li><h4 id="Consumer有序处理一个订单的binlog"><a href="#Consumer有序处理一个订单的binlog" class="headerlink" title="Consumer有序处理一个订单的binlog"></a>Consumer有序处理一个订单的binlog</h4><ul>
+<li>一个Consumer可以处理多个MessageQueue的消息，但是一个MessageQueue只能交给一个Consumer来进行处理，所以一个订单的binlog只会有序的交给一个Consumer来进行处理！</li>
+</ul>
+</li>
+<li><h4 id="这就完了吗？没有，万一消息处理失败了可以走重试队列吗？"><a href="#这就完了吗？没有，万一消息处理失败了可以走重试队列吗？" class="headerlink" title="这就完了吗？没有，万一消息处理失败了可以走重试队列吗？"></a>这就完了吗？没有，万一消息处理失败了可以走重试队列吗？</h4><ul>
+<li>绝对不是，在Consumer处理消息的时候，可能会因为底层存储挂了导致消息处理失败，之前我们说过，此时可以返回RECONSUME_LATER状态，然后broker会过一会儿自动给我们重试。</li>
+<li>那绝对是不行的，因为如果你的consumer获取到订单的一个insert binlog，结果处理失败了，此时返回了RECONSUME_LATER，那么这条消息会进入重试队列，过一会儿才会交给你重试。</li>
+<li>但是此时broker会直接把下一条消息，也就是这个订单的update binlog交给你来处理，此时万一你执行成功了，就根本没有数据可以更新！又会出现消息乱序的问题。</li>
+<li>所以对于有序消息的方案中，如果你遇到消息处理失败的场景，就必须返回SUSPEND_CURRENT_QUEUE_A_MOMENT这个状态，意思是先等一会儿，一会儿再继续处理这批消息，而不能把这批消息放入重试队列去，然后直接处理下一批消息。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/14/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%85%AB%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9F%BA%E4%BA%8E%20RocketMQ%20%E8%BF%9B%E8%A1%8C%E8%AE%A2%E5%8D%95%E5%BA%93%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%97%B6%E4%BC%9A%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%EF%BC%9F%E7%9A%84%E5%89%AF%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/14/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%85%AB%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9F%BA%E4%BA%8E%20RocketMQ%20%E8%BF%9B%E8%A1%8C%E8%AE%A2%E5%8D%95%E5%BA%93%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%97%B6%E4%BC%9A%E6%B6%88%E6%81%AF%E4%B9%B1%E5%BA%8F%EF%BC%9F%E7%9A%84%E5%89%AF%E6%9C%AC/" class="post-title-link" itemprop="url">RocketMQ（十八）：为什么基于 RocketMQ 进行订单库数据同步时会消息乱序？</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-14 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-14T19:34:14+08:00">2020-01-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="大数据团队同步订单数据库的技术方案回顾"><a href="#大数据团队同步订单数据库的技术方案回顾" class="headerlink" title="大数据团队同步订单数据库的技术方案回顾"></a>大数据团队同步订单数据库的技术方案回顾</h4><ul>
+<li>如果让大数据系统自己直接跑复杂的大SQL在订单系统的数据库上来出一些数据报表，是会严重影响订单系统的性能的，所以后来这个方案优化为了，基于Canal这样的中间件去监听订单数据库的binlog，就是一些增删改操作的日志，然后把这些binlog发送到MQ里去。</li>
+<li>接着大数据系统自己从MQ里获取binlog，落地到自己的大数据存储中去，然后对自己的存储中的数据进行计算得到数据报表即可。<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/12459100_1578535997.cn/txdocpic/0/b109c9219c1e3cd09a7e4d76d3a5e7e3/0" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="大数据团队遇到的奇怪问题：数据指标错误"><a href="#大数据团队遇到的奇怪问题：数据指标错误" class="headerlink" title="大数据团队遇到的奇怪问题：数据指标错误"></a>大数据团队遇到的奇怪问题：数据指标错误</h4><ul>
+<li>在对自己的大数据存储中的订单数据与订单数据库中的订单数据进行了一次比对之后，发现他们那儿的一些订单数据是不对的。比如在订单数据库中一个订单的字段A的值是100，结果在大数据存储中的一个订单的字段A的值是0。</li>
+<li>那如果两边的订单数据的字段值都不一致的话，必然会导致最终计算出来的数据报表的指标是错误的！</li>
+</ul>
+</li>
+<li><h4 id="严密排查之后发现的原因：订单数据库的binlog消息乱序"><a href="#严密排查之后发现的原因：订单数据库的binlog消息乱序" class="headerlink" title="严密排查之后发现的原因：订单数据库的binlog消息乱序"></a>严密排查之后发现的原因：订单数据库的binlog消息乱序</h4><ul>
+<li>简单来说，比如订单系统在更新订单数据库的时候，有两条SQL语句：  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">insert into order values(xx, 0)</span><br><span class="line">update order set xxvalue=100 where id=xxx</span><br></pre></td></tr></table></figure></li>
+<li>就是先插入了一条订单数据，刚开始他一个字段的值是0，接着更新他的一个字段的值是100。</li>
+<li>然后这两条SQL语句是对应着两个binlog的，也就是两个更新日志，一个binlog是insert语句的，一个binlog是update语句的，这个binlog会进入到MQ中去。</li>
+<li>然后大数据系统从MQ获取出来binlog的时候，居然是先获取出来了update语句的binlog，然后再获取了insert语句的binlog。</li>
+<li>也就是说，这个时候会先执行更新操作，但是此时数据根本不存在，没法进行更新，接着执行插入操作，也就是插入一条字段值为0的订单数据进去，最后大数据存储中的订单记录的字段值就是0。</li>
+</ul>
+</li>
+<li><h4 id="为什么基于MQ来传输数据会出现消息乱序？"><a href="#为什么基于MQ来传输数据会出现消息乱序？" class="headerlink" title="为什么基于MQ来传输数据会出现消息乱序？"></a>为什么基于MQ来传输数据会出现消息乱序？</h4><ul>
+<li>可以给每个Topic指定多个MessageQueue，然后你写入消息的时候，其实是会把消息均匀分发给不同的MessageQueue的。比如我们这里在写入binlog到MQ的时候，可能会把insert binlog写入到一个MessageQueue里去，update binlog写入到另外一个MessageQueue里去。</li>
+<li>接着大数据系统在获取binlog的时候，可能会部署多台机器组成一个Consumer Group，对于Consumer Group中的每台机器都会负责消费一部分MessageQueue的消息，所以可能一台机器从上图的ConsumeQueue01中获取到了insert binlog，一台机器从上图的ConsumeQueue02中获取到了update binlog。<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/57968400_1578535998.cn/txdocpic/0/b6d480a2a4bc297780e828e2d579fa9b/0" alt="avatar"></li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/13/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%83%EF%BC%89%EF%BC%9A%E5%A6%82%E6%9E%9C%E4%BC%98%E6%83%A0%E5%88%B8%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%95%E6%9C%BA%EF%BC%8C%E5%A6%82%E4%BD%95%E7%94%A8%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%E8%A7%A3%E5%86%B3%E8%BF%99%E7%A7%8D%E5%BC%82%E5%B8%B8%E5%9C%BA%E6%99%AF%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/13/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%B8%83%EF%BC%89%EF%BC%9A%E5%A6%82%E6%9E%9C%E4%BC%98%E6%83%A0%E5%88%B8%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%95%E6%9C%BA%EF%BC%8C%E5%A6%82%E4%BD%95%E7%94%A8%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%E8%A7%A3%E5%86%B3%E8%BF%99%E7%A7%8D%E5%BC%82%E5%B8%B8%E5%9C%BA%E6%99%AF%EF%BC%9F/" class="post-title-link" itemprop="url">RocketMQ（十七）：如果优惠券系统的数据库宕机，如何用死信队列解决这种异常场景？</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-13 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-13T19:34:14+08:00">2020-01-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="如果对消息的处理有异常，可以返回RECONSUME-LATER状态"><a href="#如果对消息的处理有异常，可以返回RECONSUME-LATER状态" class="headerlink" title="如果对消息的处理有异常，可以返回RECONSUME_LATER状态"></a>如果对消息的处理有异常，可以返回RECONSUME_LATER状态</h4><ul>
+<li>所以实际上如果我们因为数据库宕机等问题，对这批消息的处理是异常的，此时没法处理这批消息，我们就应该返回一个RECONSUME_LATER状态。</li>
+<li>他的意思是，我现在没法完成这批消息的处理，麻烦你稍后过段时间再次给我这批消息让我重新试一下！<br><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/29391700_1578878207.png" alt="avatar"></li>
+</ul>
+</li>
+<li><h4 id="RocketMQ是如何让你进行消费重试的？"><a href="#RocketMQ是如何让你进行消费重试的？" class="headerlink" title="RocketMQ是如何让你进行消费重试的？"></a>RocketMQ是如何让你进行消费重试的？</h4><ul>
+<li>简单来说，RocketMQ会有一个针对你这个ConsumerGroup的重试队列。</li>
+<li>比如你的消费组的名称是“VoucherConsumerGroup”，意思是优惠券系统的消费组，那么他会有一个“%RETRY%VoucherConsumerGroup”这个名字的重试队列。</li>
+<li>然后过一段时间之后，重试队列中的消息会再次给我们，让我们进行处理。如果再次失败，又返回了RECONSUME_LATER，那么会再过一段时间让我们来进行处理，默认最多是重试16次！每次重试之间的间隔时间是不一样的，这个间隔时间可以如下进行配置：<br>messageDelayLevel=1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h</li>
+</ul>
+</li>
+<li><h4 id="如果连续重试16次还是无法处理消息，然后怎么办？"><a href="#如果连续重试16次还是无法处理消息，然后怎么办？" class="headerlink" title="如果连续重试16次还是无法处理消息，然后怎么办？"></a>如果连续重试16次还是无法处理消息，然后怎么办？</h4><ul>
+<li>死信队列：其实就是一批消息交给你处理，你重试了16次还一直没处理成功，就不要继续重试这批消息了，你就认为他们死掉了就可以了。然后这批消息会自动进入死信队列。</li>
+<li>死信队列的名字是“%DLQ%VoucherConsumerGroup”，我们其实在RocketMQ的管理后台上都是可以看到的。</li>
+<li>使用场景：比如我们可以专门开一个后台线程，就是订阅“%DLQ%VoucherConsumerGroup”这个死信队列，对死信队列中的消息，还是一直不停的重试。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/12/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89%EF%BC%9AConsumer%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9A%E6%89%8B%E5%8A%A8%E6%8F%90%E4%BA%A4offset%20+%20%E8%87%AA%E5%8A%A8%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E7%9A%84%E5%89%AF%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/12/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89%EF%BC%9AConsumer%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9A%E6%89%8B%E5%8A%A8%E6%8F%90%E4%BA%A4offset%20+%20%E8%87%AA%E5%8A%A8%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E7%9A%84%E5%89%AF%E6%9C%AC/" class="post-title-link" itemprop="url">RocketMQ（十六）：Consumer消息零丢失方案：手动提交offset + 自动故障转移</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-12 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-12T19:34:14+08:00">2020-01-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="消费者的与众不同的地方"><a href="#消费者的与众不同的地方" class="headerlink" title="消费者的与众不同的地方"></a>消费者的与众不同的地方</h4><ul>
+<li><p>对一批消息都没提交他的offset给broker的话，broker不会认为你已经处理完了这批消息，此时你突然红包系统的一台机器宕机了，他其实会感知到你的红包系统的一台机器作为一个Consumer挂了。接着他会把你没处理完的那批消息交给红包系统的其他机器去进行处理，所以在这种情况下，消息也绝对是不会丢失的。</p>
+</li>
+<li><p>需要做好幂等性处理，如果提交offset失败的情况。</p>
+<p><img src="http://wechatapppro-1252524126.file.myqcloud.com/image/ueditor/26134900_1578390402.png" alt="avatar"></p>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/11/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89%EF%BC%9ABroker%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9A%E5%90%8C%E6%AD%A5%E5%88%B7%E7%9B%98%20+%20Raft%E5%8D%8F%E8%AE%AE%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E7%9A%84%E5%89%AF%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/11/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89%EF%BC%9ABroker%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9A%E5%90%8C%E6%AD%A5%E5%88%B7%E7%9B%98%20+%20Raft%E5%8D%8F%E8%AE%AE%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E7%9A%84%E5%89%AF%E6%9C%AC/" class="post-title-link" itemprop="url">RocketMQ（十五）：Broker消息零丢失方案：同步刷盘 + Raft协议主从同步</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-11 19:34:14" itemprop="dateCreated datePublished" datetime="2020-01-11T19:34:14+08:00">2020-01-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="保证消息写入MQ不代表不丢失"><a href="#保证消息写入MQ不代表不丢失" class="headerlink" title="保证消息写入MQ不代表不丢失"></a>保证消息写入MQ不代表不丢失</h4><ul>
+<li>写入MQ成功了，这条消息也大概率是仅仅停留在MQ机器的os cache中，一旦机器宕机内存里的数据都会丢失，或者哪怕消息已经进入了MQ机器的磁盘文件里，但是磁盘一旦坏了，消息也会丢失。</li>
+</ul>
+</li>
+<li><h4 id="异步刷盘-VS-同步刷盘"><a href="#异步刷盘-VS-同步刷盘" class="headerlink" title="异步刷盘 VS 同步刷盘"></a>异步刷盘 VS 同步刷盘</h4><ul>
+<li>异步刷盘：消息即使成功写入了MQ，他也就在机器的os cache中，没有进入磁盘里，要过一会儿等操作系统自己把os cache里的数据实际刷入磁盘文件中去。所以在异步刷盘的模式下，我们的写入消息的吞吐量肯定是极高的，毕竟消息只要进入os cache这个内存就可以了，写消息的性能就是写内存的性能，那每秒钟可以写入的消息数量肯定更多了，但是这个情况下，可能就会导致数据的丢失。</li>
+<li>同步刷盘：所以如果一定要确保数据零丢失的话，可以调整MQ的刷盘策略，我们需要调整broker的配置文件，将其中的flushDiskType配置设置为：SYNC_FLUSH，默认他的值是ASYNC_FLUSH，即默认是异步刷盘的。如果调整为同步刷盘之后，我们写入MQ的每条消息，只要MQ告诉我们写入成功了，那么他们就是已经进入了磁盘文件了！</li>
+</ul>
+</li>
+<li><h4 id="如何通过主从架构模式避免磁盘故障导致的数据丢失？"><a href="#如何通过主从架构模式避免磁盘故障导致的数据丢失？" class="headerlink" title="如何通过主从架构模式避免磁盘故障导致的数据丢失？"></a>如何通过主从架构模式避免磁盘故障导致的数据丢失？</h4>  也就是说，必须让一个Master Broker有一个Slave Broker去同步他的数据，而且你一条消息写入成功，必须是让Slave Broker也写入成功，保证数据有多个副本的冗余。<br>  对于主从同步的架构，我们本来就是讲解了基于DLedger技术和Raft协议的主从同步架构，你如果采用了这套架构，对于你所有的消息写入，只要他写入成功，那就一定会通过Raft协议同步给其他的Broker机器。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/27/RocketMQ/RocketMQ%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89%EF%BC%9A%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF%E9%9B%B6%E4%B8%A2%E5%A4%B1%E6%96%B9%E6%A1%88%EF%BC%9ARocketMQ%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -261,6 +685,12 @@
 <li>我们没收到响应，可能就会网络超时报错，也可能直接有其他的异常错误，这个时候订单系统会误以为是发送half消息到MQ失败了，订单系统就直接会执行退款流程了，订单状态也会标记为“已关闭”。</li>
 <li>其实RocketMQ这里有一个补偿流程，他会去扫描自己处于half状态的消息，如果我们一直没有对这个消息执行commit/rollback操作，超过了一定的时间，他就会回调你的订单系统的一个接口。他会问问你：这个消息到底怎么回事？你到底是打算commit这个消息还是要rollback这个消息？</li>
 <li>这个时候我们的订单系统就得去查一下数据库，看看这个订单当前的状态，一下发现订单状态是“已关闭”，此时就知道，你必然得发送rollback请求给MQ去删除之前那个half消息了！</li>
+</ul>
+</li>
+<li><h4 id="如果rollback或者commit发送失败了呢？"><a href="#如果rollback或者commit发送失败了呢？" class="headerlink" title="如果rollback或者commit发送失败了呢？"></a>如果rollback或者commit发送失败了呢？</h4>  如果订单系统是收到了half消息写入成功的响应了，同时尝试对自己的数据库更新了，然后根据失败或者成功去执行了rollback或者commit请求，发送给MQ了，结果因为网络故障，导致rollback或者commit请求发送失败了呢？<ul>
+<li>因为MQ里的消息一直是half状态，所以说他过了一定的超时时间会发现这个half消息有问题，他会回调你的订单系统的接口。</li>
+<li>你此时要判断一下，这个订单的状态如果更新为了“已完成”，那你就得再次执行commit请求，反之则再次执行rollback请求。</li>
+<li>本质这个MQ的回调就是一个补偿机制，如果你的half消息响应没收到，或者rollback、commit请求没发送成功，他都会来找你问问对half消息后续如何处理。</li>
 </ul>
 </li>
 </ul>
@@ -689,504 +1119,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/09/RocketMQ/RocketMQ%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9A%E7%94%9F%E4%BA%A7%E8%80%85%E5%A6%82%E4%BD%95%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF/" class="post-title-link" itemprop="url">RocketMQ（九）：生产者如何发送消息</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-12-09 19:34:14" itemprop="dateCreated datePublished" datetime="2019-12-09T19:34:14+08:00">2019-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="Topic、MessageQueue以及Broker之间"><a href="#Topic、MessageQueue以及Broker之间" class="headerlink" title="Topic、MessageQueue以及Broker之间"></a>Topic、MessageQueue以及Broker之间</h4><ul>
-<li>MessageQueue就是RocketMQ中非常关键的一个数据分片机制，通过MessageQueue将一个Topic的数据拆分为了很多个数据分片，然后在每个Broker机器上都存储一些MessageQueue，实现Topic数据的分布式存储。</li>
-</ul>
-</li>
-<li><h4 id="生产者发送消息的时候写入哪个MessageQueue？"><a href="#生产者发送消息的时候写入哪个MessageQueue？" class="headerlink" title="生产者发送消息的时候写入哪个MessageQueue？"></a>生产者发送消息的时候写入哪个MessageQueue？</h4><ul>
-<li>生产者从NameServer中知道，一个Topic有几个MessageQueue，哪些MessageQueue在哪台Broker机器上</li>
-<li>有多种写入策略，暂定按均写入。假设单个Broker可以抗每秒7万并发，那么两个Broker就可以抗每秒14万并发<br><img src="https://s2.ax1x.com/2019/12/09/Q0UMfe.png" alt="avatar"></li>
-</ul>
-</li>
-<li><h4 id="如果某个Broker出现故障"><a href="#如果某个Broker出现故障" class="headerlink" title="如果某个Broker出现故障"></a>如果某个Broker出现故障</h4><ul>
-<li>如果某个Master Broker挂了，此时正在等待的其他Slave Broker自动热切换为Master Broker，那么这个时候对这一组Broker就没有Master Broker可以写入</li>
-<li><strong>sendLatencyFaultEnable</strong> 建议在Producer中开启一个开关，会有一个自动容错机制，比如如果某次访问一个Broker发现网络延迟有500ms，然后还无法访问，那么就会自动回避访问这个Broker一段时间，比如接下来3000ms内，就不会访问这个Broker</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/RocketMQ/RocketMQ%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">RocketMQ（八）：消息发送及消费模式</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-27 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-27T19:34:14+08:00">2019-11-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="消息发送模式"><a href="#消息发送模式" class="headerlink" title="消息发送模式"></a>消息发送模式</h4><ul>
-<li>同步发送<ul>
-<li>等待MQ返回一个结果，代码才能往下走<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SendResult sendResult = producer.send(msg);</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li>异步发送<ul>
-<li>设置一步发送失败的时候重试次数为0<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 设置一步发送失败的时候重试次数为0</span><br><span class="line">producer.setRetryTimesWhenSendAsyncFailed(0);</span><br><span class="line"></span><br><span class="line">producer.send(msg, new SendCallback() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(SendResult sendResult) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onException(Throwable throwable) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li>发送单向消息<ul>
-<li>发送一个消息给MQ，然后代码就往下执行，根本不会关注MQ有没有返回结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">producer.sendOneway(msg);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h4 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h4><ul>
-<li>Push消费，DefaultMQPushConsumer<ul>
-<li>Broker会主动把消息发送给消费者，消费者是被动的接收Broker推送给过来的消息，然后进行处理。</li>
-</ul>
-</li>
-<li>Pull消费，DefaultMQPullConsumer<ul>
-<li>Broker不会主动推送消息给Consumer，而是消费者主动发送请求到Broker去拉取消息过来。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9A%E5%B0%8F%E8%A7%84%E6%A8%A1RocketMQ%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E5%8E%8B%E6%B5%8B%EF%BC%8C%E5%90%8C%E6%97%B6%E4%B8%BA%E7%94%9F%E4%BA%A7%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E8%A7%84%E5%88%92/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/19/RocketMQ/RocketMQ%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9A%E5%B0%8F%E8%A7%84%E6%A8%A1RocketMQ%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E5%8E%8B%E6%B5%8B%EF%BC%8C%E5%90%8C%E6%97%B6%E4%B8%BA%E7%94%9F%E4%BA%A7%E9%9B%86%E7%BE%A4%E8%BF%9B%E8%A1%8C%E8%A7%84%E5%88%92/" class="post-title-link" itemprop="url">RocketMQ（七）：小规模RocketMQ集群进行压测，同时为生产集群进行规划</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-19 19:34:14" itemprop="dateCreated datePublished" datetime="2019-11-19T19:34:14+08:00">2019-11-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="RocketMQ小规模集群的压测"><a href="#RocketMQ小规模集群的压测" class="headerlink" title="RocketMQ小规模集群的压测"></a>RocketMQ小规模集群的压测</h4><ul>
-<li>RocketMQ的TPS和消息延时<ul>
-<li>两个Producer不停的往RocketMQ集群发送消息，每个Producer所在机器启动了80个线程，相当于每台机器有80个线程并发的往RocketMQ集群写入消息。RocketMQ集群是1主2从组成的一个dledger模式的高可用集群，只有一个Master Broker会接收消息的写入。有2个Cosumer不停的从RocketMQ集群消费数据。</li>
-<li>每条数据的大小是500个字节。一条消息从Producer生产出来到经过RocketMQ的Broker存储下来，再到被Consumer消费，基本上这个时间跨度不会超过1秒钟，这些这个性能是正常而且可以接受的。</li>
-<li>同时在RocketMQ的管理工作台中可以看到，Master Broker的TPS（也就是每秒处理消息的数量），可以稳定的达到7万左右，也就是每秒可以稳定处理7万消息。</li>
-</ul>
-</li>
-<li>cpu负载情况<ul>
-<li>执行top命令就可以看到cpu load和cpu使用率，这就代表了cpu的负载情况。</li>
-<li>执行了top命令之后，往往可以看到如下一行信息：  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">load average：12.03，12.05，12.08</span><br><span class="line">类似上面那行信息代表的是cpu在1分钟、5分钟和15分钟内的cpu负载情况</span><br></pre></td></tr></table></figure>
-  比如我们一台机器是24核的，那么上面的12意思就是有12个核在使用中。换言之就是还有12个核其实还没使用，cpu还是有很大余力的。</li>
-</ul>
-</li>
-<li>内存使用率<ul>
-<li>使用free命令就可以查看到内存的使用率</li>
-</ul>
-</li>
-<li>JVM GC频率<ul>
-<li>使用jstat命令就可以查看RocketMQ的JVM的GC频率，基本上新生代每隔几十秒会垃圾回收一次，每次回收过后存活的对象很少，几乎不进入老年代</li>
-</ul>
-</li>
-<li>磁盘IO负载<ul>
-<li>用top命令查看一下IO等待占用CPU时间的百分比<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cpu(s):  0.3% us,  0.3% sy,  0.0% ni, 76.7% id, 13.2% wa,  0.0% hi,  0.0% si。</span><br></pre></td></tr></table></figure>
-在这里的13.2% wa，说的就是磁盘IO等待在CPU执行时间中的百分比，如果这个比例太高，说明CPU执行的时候大部分时间都在等待执行IO，也就说明IO负载很高，导致大量的IO等待。如果是40%左右，说明IO等待时间占用CPU执行时间的比例在40%左右，这是相对高一些，但还是可以接受的，只不过如果继续让这个比例提高上去，就很不靠谱了，因为说明磁盘IO负载可能过高了。</li>
-</ul>
-</li>
-<li>网卡流量  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sar -n DEV 1 2</span><br></pre></td></tr></table></figure>
-<ul>
-<li>服务器使用的是千兆网卡，千兆网卡的理论上限是每秒传输128M数据，但是一般实际最大值是每秒传输100M数据。</li>
-<li>在RocketMQ处理到每秒7万消息的时候，每条消息500字节左右的大小的情况下，每秒网卡传输数据量已经达到100M了，就是已经达到了网卡的一个极限值了。</li>
-<li>因为一个Master Broker服务器，每秒不光是通过网络接收你写入的数据，还要把数据同步给两个Slave Broker，还有别的一些网络通信开销。因此实际压测发现，每条消息500字节，每秒7万消息的时候，服务器的网卡就几乎打满了，无法承载更多的消息了。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/17/RocketMQ/RocketMQ%EF%BC%88%E5%85%AD%EF%BC%89%EF%BC%9AOS%E5%86%85%E6%A0%B8%E5%8F%82%E6%95%B0%E5%92%8CJVM%E5%8F%82%E6%95%B0%E7%9A%84%E8%B0%83%E6%95%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/17/RocketMQ/RocketMQ%EF%BC%88%E5%85%AD%EF%BC%89%EF%BC%9AOS%E5%86%85%E6%A0%B8%E5%8F%82%E6%95%B0%E5%92%8CJVM%E5%8F%82%E6%95%B0%E7%9A%84%E8%B0%83%E6%95%B4/" class="post-title-link" itemprop="url">RocketMQ（六）：OS内核参数和JVM参数的调整</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-17 22:40:10" itemprop="dateCreated datePublished" datetime="2019-11-17T22:40:10+08:00">2019-11-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="OS内核参数"><a href="#OS内核参数" class="headerlink" title="OS内核参数"></a>OS内核参数</h4><ul>
-<li>vm.overcommit_memory<ul>
-<li>配置含义<ul>
-<li>0:中间件系统申请内存的时候，os内核会检查可用内存是否足够，如果足够的话就分配内存给你，如果感觉剩余内存不是太够了，干脆就拒绝你的申请，导致你申请内存失败，进而导致中间件系统异常出错。</li>
-<li>1:把所有可用的物理内存都允许分配给你，只要有内存就给你来用，这样可以避免申请内存失败的问题。</li>
-</ul>
-</li>
-<li>案例：我们曾经线上环境部署的Redis就因为这个参数是0，导致在save数据快照到磁盘文件的时候，需要申请大内存的时候被拒绝了，进而导致了异常报错。</li>
-<li>修改：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;vm.overcommit_memory=1&apos; &gt;&gt; /etc/sysctl.conf</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li>vm.max_map_count<ul>
-<li>配置含义(默认：65536)<ul>
-<li>这个参数的值会影响中间件系统可以开启的线程的数量，如果这个参数过小，有的时候可能会导致有些中间件无法开启足够的线程，进而导致报错，甚至中间件系统挂掉。</li>
-</ul>
-</li>
-<li>修改（建议可以把这个参数调大10倍，比如655360这样的值，保证中间件可以开启足够多的线程）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;vm.max_map_count=655360&apos; &gt;&gt; /etc/sysctl.conf</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li>vm.swappiness<ul>
-<li>配置含义：这个参数是用来控制进程的swap行为的，这个简单来说就是os会把一部分磁盘空间作为swap区域，然后如果有的进程现在可能不是太活跃，就会被操作系统把进程调整为睡眠状态，把进程中的数据放入磁盘上的swap区域，然后让这个进程把原来占用的内存空间腾出来，交给其他活跃运行的进程来使用。<ul>
-<li>0:尽量别把任何一个进程放到磁盘swap区域去，尽量大家都用物理内存。</li>
-<li>100:尽量把一些进程给放到磁盘swap区域去，内存腾出来给活跃的进程使用。</li>
-<li>60（默认）:有点偏高了，可能会导致我们的中间件运行不活跃的时候被迫腾出内存空间然后放磁盘swap区域去。</li>
-</ul>
-</li>
-<li>修改：在生产环境建议把这个参数调整小一些，比如设置为10，尽量用物理内存，别放磁盘swap区域去。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;vm.swappiness=10&apos; &gt;&gt; /etc/sysctl.conf</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li>ulimit<ul>
-<li>配置含义<ul>
-<li>这个是用来控制linux上的最大文件链接数的，默认值可能是1024，一般肯定是不够的，因为你在大量频繁的读写磁盘文件的时候，或者是进行网络通信的时候，都会跟这个参数有关系</li>
-</ul>
-</li>
-<li>修改<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;ulimit -n 1000000&apos; &gt;&gt; /etc/profile</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>RocketMQ的JVM参数<ul>
-<li>-Xms8g -Xmx8g -Xmn4g:重点需要调整的，就是默认的堆大小是8g内存，新生代是4g内存，但是我们的高配物理机是48g内存的，所以这里完全可以给他们翻几倍，比如给堆内存20g，其中新生代给10g，甚至可以更多一些，当然要留一些内存给操作系统来用。</li>
-<li>-XX:+UseG1GC -XX:G1HeapRegionSize=16m：这几个参数也是至关重要的，这是选用了G1垃圾回收器来做分代回收，对新生代和老年代都是用G1来回收，这里把G1的region大小设置为了16m，这个因为机器内存比较多，所以region大小可以调大一些给到16m，不然用2m的region，会导致region数量过多的。</li>
-<li>-XX:G1ReservePercent=25：这个参数是说，在G1管理的老年代里预留25%的空闲内存，保证新生代对象晋升到老年代的时候有足够空间，避免老年代内存都满了，新生代有对象要进入老年代没有充足内存了，默认值是10%，略微偏少，这里RocketMQ给调大了一些</li>
-<li>-XX:InitiatingHeapOccupancyPercent=30：这个参数是说，当堆内存的使用率达到30%之后就会自动启动G1的并发垃圾回收，开始尝试回收一些垃圾对象，默认值是45%，这里调低了一些，也就是提高了GC的频率，但是避免了垃圾对象过多，一次垃圾回收耗时过长的问题。</li>
-<li>-XX:SoftRefLRUPolicyMSPerMB=0：这个参数默认设置为0了，其实建议这个参数不要设置为0，避免频繁回收一些软引用的Class对象，这里可以调整为比如1000。</li>
-<li>-verbose:gc -Xloggc:/dev/shm/mq_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m：这一堆参数都是控制GC日志打印输出的，确定了gc日志文件的地址，要打印哪些详细信息，然后控制每个gc日志文件的大小是30m，最多保留5个gc日志文件。</li>
-<li>-XX:-OmitStackTraceInFastThrow：这个参数是说，有时候JVM会抛弃一些异常堆栈信息，因此这个参数设置之后，就是禁用这个特性，要把完整的异常堆栈信息打印出来。</li>
-<li>-XX:+AlwaysPreTouch：这个参数的意思是我们刚开始指定JVM用多少内存，不会真正分配给他，会在实际需要使用的时候再分配给他，所以使用这个参数之后，就是强制让JVM启动的时候直接分配我们指定的内存，不要等到使用内存的时候再分配</li>
-<li>-XX:MaxDirectMemorySize=15g：这是说RocketMQ里大量用了NIO中的direct buffer，这里限定了direct buffer最多申请多少，如果你机器内存比较大，可以适当调大这个值。</li>
-<li>-XX:-UseLargePages -XX:-UseBiasedLocking：这两个参数的意思是禁用大内存页和偏向锁，直接禁用两个特性即可。</li>
-</ul>
-</li>
-<li>RocketMQ核心参数<ul>
-<li>dledger的示例配置文件：rocketmq/distribution/target/apache-rocketmq/conf/dledger</li>
-<li>sendMessageThreadPoolNums=16，这个参数的意思就是RocketMQ内部用来发送消息的线程池的线程数量，默认是16。这个参数可以根据你的机器的CPU核数进行适当增加，比如机器CPU是24核的，可以增加这个线程数量到24或者30。</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/15/RocketMQ/RocketMQ%EF%BC%88%E4%BA%94%EF%BC%89%EF%BC%9ARocketMQ%E9%9B%86%E7%BE%A4%E5%8F%AF%E8%A7%86%E5%8C%96%E7%9B%91%E6%8E%A7%E5%92%8C%E7%AE%A1%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/15/RocketMQ/RocketMQ%EF%BC%88%E4%BA%94%EF%BC%89%EF%BC%9ARocketMQ%E9%9B%86%E7%BE%A4%E5%8F%AF%E8%A7%86%E5%8C%96%E7%9B%91%E6%8E%A7%E5%92%8C%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">RocketMQ（五）：RocketMQ集群可视化监控和管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-11-15 22:40:10" itemprop="dateCreated datePublished" datetime="2019-11-15T22:40:10+08:00">2019-11-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
-                    <span itemprop="name">RocketMQ</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><h4 id="RocketMQ的大优势：可视化的管理界面"><a href="#RocketMQ的大优势：可视化的管理界面" class="headerlink" title="RocketMQ的大优势：可视化的管理界面"></a>RocketMQ的大优势：可视化的管理界面</h4><ul>
-<li>NameServer的三台机器中的任意一台机器<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/apache/rocketmq-externals.git</span><br><span class="line">cd rocketmq-externals/rocketmq-console</span><br><span class="line"># 执行以下命令对rocketmq-cosole进行打包，把他做成一个jar包：</span><br><span class="line">mvn package -DskipTests</span><br><span class="line"># 进入target目录下，可以看到一个jar包，接着执行下面的命令启动工作台：</span><br><span class="line">java -jar rocketmq-console-ng-1.0.1.jar --server.port=8080 --rocketmq.config.namesrvAddr=127.0.0.1:9876</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1237,7 +1169,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

@@ -180,6 +180,456 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/03/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91/" class="post-title-link" itemprop="url">软件工程管理（二）敏捷开发</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-05-03 20:11:08" itemprop="dateCreated datePublished" datetime="2019-05-03T20:11:08+08:00">2019-05-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
+                    <span itemprop="name">SoftwareManage</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="什么是敏捷开发"><a href="#什么是敏捷开发" class="headerlink" title="什么是敏捷开发"></a>什么是敏捷开发</h4>  敏捷不是一种方法论，也不是一种软件开发的具体方法，更不是一个框架或过程，而是一套价值观和原则。<br>  用敏捷开发的方式，不再像瀑布模型那样有严格的阶段划分，会在迭代中不断完善；不再写很多文档，而是和客户一起紧密合作；不再抵制需求变更，而是即时响应变更；不再等到测试阶段才发布，而是随时发布，客户随时可以看到东西。<br>  敏捷开发的模式也存在一些问题，例如全程需要客户参与，由于测试相对少一些 ，问题也会相应多一些。</li>
+<li><h4 id="敏捷开发和瀑布模型的差异"><a href="#敏捷开发和瀑布模型的差异" class="headerlink" title="敏捷开发和瀑布模型的差异"></a>敏捷开发和瀑布模型的差异</h4><ul>
+<li>敏捷开发是怎么做需求分析的<ul>
+<li>瀑布模型的一个重要阶段就是需求分析，要有严谨的需求分析，产生详尽的需求分析文档。</li>
+<li>而敏捷开发的需求，主要是来源于一个个小的用户故事，用户故事通常是写在卡片上的一句话，在 Sprint 的开发中，再去确认需求的细节。</li>
+<li>好处是减少了大量需求文档的撰写，可以早些进入开发。但这个对开发人员在需求理解和沟通的能力上要求更高了。</li>
+</ul>
+</li>
+<li>敏捷开发是怎么做架构设计的<ul>
+<li>瀑布模型在需求分析完了以后，就需要根据需求做架构设计。</li>
+<li>而在敏捷开发中，并不是基于完整的用户需求开发，每个 Sprint 只做一部分需求，所以是一种渐进式的架构设计，当前 Sprint 只做适合当前需求的架构设计。</li>
+<li>这种渐进式的架构设计，迭代次数一多，就会出现架构满足不了需求的现象，产生不少冗余代码，通常我们叫它技术债务，需要定期对系统架构进行重构。</li>
+</ul>
+</li>
+<li>敏捷开发怎么保证项目质量的<ul>
+<li>瀑布模型在编码完成后，会有专门的阶段进行测试，以保证质量。</li>
+<li>在敏捷开发的 Sprint 中，并没有专门的测试阶段，这就依赖于开发功能的同时，要编写单元测试和集成测试代码，用自动化的方式辅助完成测试。</li>
+</ul>
+</li>
+<li>敏捷开发是怎么发布部署的<ul>
+<li>瀑布模型通常在编码结束后，开始部署测试环境，然后在测试阶段定期部署测试环境。测试验收通过后，发布部署到生产环境。</li>
+<li>在敏捷开发中，这种持续构建、持续发布的概念叫持续集成，因为整个过程都是全自动化的，每次完成一个任务，提交代码后都可以触发一次构建部署操作，脚本会拿最新的代码做一次全新的构建，然后运行所有的单元测试和集成测试代码，测试通过后部署到测试环境。</li>
+</ul>
+</li>
+<li><h4 id="敏捷开发的-Sprint-和迭代模型的迭代有什么区别"><a href="#敏捷开发的-Sprint-和迭代模型的迭代有什么区别" class="headerlink" title="敏捷开发的 Sprint 和迭代模型的迭代有什么区别"></a>敏捷开发的 Sprint 和迭代模型的迭代有什么区别</h4><ul>
+<li>我们假设有两个团队，都要实现一个简单的用户系统，一个团队用迭代模型，一个团队用敏捷开发（Scrum），一个迭代 /Sprint 的时间周期都是 2 周（10 个工作日）。</li>
+<li>迭代模型所在的团队，产品经理会先花 2 天时间去分析需求，写成需求分析文档，架构师会花 3 天时间来做设计，程序员会花 3 天时间编码，测试再花 2 天时间去测试，最后上线用户系统。</li>
+<li>敏捷开发的团队，产品经理会把需求拆分成了几个简单的用户故事：用户登录、用户注册、找回密码、修改资料，然后放到当前 Sprint 的 Backlog（任务清单），Team（开发团队）成员开始从 Backlog 选择用户故事。<ul>
+<li>程序员 A 选了“用户登录”这个用户故事，他会去找产品经理确认需求细节，之后动手实现这个用户故事。</li>
+<li>功能完成后，同时程序员 A 还写了单元测试代码和集成测试代码，对登录的功能写了自动化测试。完成后，通过持续集成工具测试和部署到测试环境。部署完成后，用户登录功能就可以进行使用了。</li>
+<li>这个过程，程序员 A 可能花了 4 天时间，做完“用户登录”这个用户故事之后，他又开始继续选取“找回密码”的用户故事来做，4 天时间也完成了。</li>
+<li>其他程序员也和程序员 A 一样，他们也会从 Backlog 选择一些用户故事来做。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/02/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89%E7%80%91%E5%B8%83%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">软件工程管理（一）瀑布模型</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-05-02 00:34:14" itemprop="dateCreated datePublished" datetime="2019-05-02T00:34:14+08:00">2019-05-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SoftwareManage/" itemprop="url" rel="index">
+                    <span itemprop="name">SoftwareManage</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><h4 id="瀑布模型把整个项目过程分成了六个主要阶段"><a href="#瀑布模型把整个项目过程分成了六个主要阶段" class="headerlink" title="瀑布模型把整个项目过程分成了六个主要阶段"></a>瀑布模型把整个项目过程分成了六个主要阶段</h4><ul>
+<li>问题的定义及规划<br>需求方和开发方共同确定软件开发目标，同时还要做可行性研究，以确定项目可行。这个阶段会产生需求文档和可行性研究报告。</li>
+<li>需求分析<br>对需求方提出的所有需求，进行详细的分析。这个阶段一般需要和客户反复确认，以保证能充分理解客户需求。最终会形成需求分析文档。</li>
+<li>软件设计<br>根据需求分析的结果，对整个软件系统进行抽象和设计，如系统框架设计，数据库设计等等。最后会形成架构设计文档。</li>
+<li>程序编码<br>将架构设计和界面设计的结果转换成计算机能运行的程序代码。</li>
+<li>软件测试<br>对可运行的结果对照需求分析文档进行严密的测试。</li>
+<li>运行维护<br>在软件开发完成，正式运行投入使用。后续需要继续维护，修复错误和增加功能。交付时需要提供使用说明文档。</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型优点"><a href="#瀑布模型优点" class="headerlink" title="瀑布模型优点"></a>瀑布模型优点</h4><ul>
+<li>简单易行</li>
+<li>可以按照阶段检查，能及时发现问题</li>
+<li>前一个阶段完成后，就可以重点关注下一个阶段</li>
+<li>有很好的分工协作</li>
+<li>对质量有保证</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型缺点"><a href="#瀑布模型缺点" class="headerlink" title="瀑布模型缺点"></a>瀑布模型缺点</h4><ul>
+<li>难以响应需求的变更，当需求发生改变的时候，越到后期代价越大</li>
+<li>工作量分布不均匀。例如前期开发，测试人员无法参与，而后期开发，测试人员又特别忙</li>
+<li>前期进度受阻，会一只压缩后续阶段时间，导致延期或影响质量</li>
+<li>一直到最后阶段才能看到结果</li>
+</ul>
+</li>
+<li><h4 id="瀑布模型以外的开发模型"><a href="#瀑布模型以外的开发模型" class="headerlink" title="瀑布模型以外的开发模型"></a>瀑布模型以外的开发模型</h4><ul>
+<li>快速开发快速改：先迅速建造一个可以运行的软件原型，然后收集用户反馈，再反复修改确认</li>
+<li>大瀑布拆小瀑布：系统进行模块化处理，分批次交付软件产品</li>
+<li>迭代模型：每次迭代都有一个可用的版本</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/19/Maven/Maven(%E4%B8%80)%EF%BC%9A%E5%AE%89%E8%A3%85%E3%80%81%E9%85%8D%E7%BD%AE%E3%80%81mvn%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/04/19/Maven/Maven(%E4%B8%80)%EF%BC%9A%E5%AE%89%E8%A3%85%E3%80%81%E9%85%8D%E7%BD%AE%E3%80%81mvn%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B/" class="post-title-link" itemprop="url">Maven(一)：安装、配置</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-04-19 00:34:14" itemprop="dateCreated datePublished" datetime="2019-04-19T00:34:14+08:00">2019-04-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Maven/" itemprop="url" rel="index">
+                    <span itemprop="name">Maven</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>安装jdk<ul>
+<li>oracle官网上去下载jdk-8u181-linux-x64.tar.gz，将其放在/opt/jdk目录中，并解压<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zvxf jdk-8u181-linux-x64.tar.gz</span><br></pre></td></tr></table></figure></li>
+<li>配置环境变量，在/etc/profile文件末尾追加下面几行<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/opt/jdk/jdk1.8.0_181</span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH</span><br><span class="line">export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar</span><br></pre></td></tr></table></figure></li>
+<li>配置生效<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure></li>
+<li>验证jdk是否正常<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -version</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>安装maven<ul>
+<li>下载地址 <a href="https://maven.apache.org/download.cgi" target="_blank" rel="noopener">https://maven.apache.org/download.cgi</a><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir /opt/maven</span><br><span class="line">cd /opt/maven/</span><br><span class="line">wget http://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz</span><br><span class="line">tar -zvxf apache-maven-3.6.2-bin.tar.gz</span><br></pre></td></tr></table></figure></li>
+<li>配置maven环境变量<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export M2_HOME=/opt/maven/maven</span><br><span class="line">export PATH=$M2_HOME/bin:$PATH</span><br></pre></td></tr></table></figure></li>
+<li>配置生效<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure></li>
+<li>验证maven<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn -v</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/19/Shrio/Shiro%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/05/19/Shrio/Shiro%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">Shrio架构</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-05-19 00:34:14" itemprop="dateCreated datePublished" datetime="2018-05-19T00:34:14+08:00">2018-05-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Shrio/" itemprop="url" rel="index">
+                    <span itemprop="name">Shrio</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Apache Shiro是一个强大且易用的Java安全框架,执行身份验证、授权、密码和会话管理。<br>三个核心组件：Subject, SecurityManager 和 Realms.</p>
+<ul>
+<li><h4 id="Subject"><a href="#Subject" class="headerlink" title="Subject"></a>Subject</h4>  即“当前操作用户”。但是，在Shiro中，Subject这一概念并不仅仅指人，也可以是第三方进程、后台帐户（Daemon Account）或其他类似事物。它仅仅意味着“当前跟软件交互的东西”。但考虑到大多数目的和用途，你可以把它认为是Shiro的“用户”概念。<br>  Subject代表了当前用户的安全操作，SecurityManager则管理所有用户的安全操作。</li>
+<li><h4 id="SecurityManager"><a href="#SecurityManager" class="headerlink" title="SecurityManager"></a>SecurityManager</h4>  它是Shiro框架的核心，典型的Facade模式，Shiro通过SecurityManager来管理内部组件实例，并通过它来提供安全管理的各种服务。</li>
+<li><h4 id="Realm"><a href="#Realm" class="headerlink" title="Realm"></a>Realm</h4>  Realm充当了Shiro与应用安全数据间的“桥梁”或者“连接器”。也就是说，当对用户执行认证（登录）和授权（访问控制）验证时，Shiro会从应用配置的Realm中查找用户及其权限信息。<br>  从这个意义上讲，Realm实质上是一个安全相关的DAO：它封装了数据源的连接细节，并在需要时将相关数据提供给Shiro。当配置Shiro时，你必须至少指定一个Realm，用于认证和（或）授权。配置多个Realm是可以的，但是至少需要一个。<br>  Shiro内置了可以连接大量安全数据源（又名目录）的Realm，如LDAP、关系数据库（JDBC）、类似INI的文本配置资源以及属性文件等。如果缺省的Realm不能满足需求，你还可以插入代表自定义数据源的自己的Realm实现。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="刘勇">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LY Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/01/22/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%89)%EF%BC%9AJVM%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%EF%BC%8C%E5%88%86%E5%88%AB%E9%83%BD%E6%98%AF%E7%94%A8%E6%9D%A5%E5%B9%B2%E5%98%9B%E7%9A%84%EF%BC%9F/" class="post-title-link" itemprop="url">JVM系列(三)：JVM中有哪些内存区域，分别都是用来干嘛的？</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-01-22 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-22T00:34:14+08:00">2015-01-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="到底什么是JVM的内存区域划分"><a href="#到底什么是JVM的内存区域划分" class="headerlink" title="到底什么是JVM的内存区域划分"></a>到底什么是JVM的内存区域划分</h4><ul>
+<li>那么运行方法的时候，方法里面有很多变量之类的东西，是不是需要放在某个内存区域里？</li>
+<li>接着如果我们写的代码里创建一些对象，这些对象是不是也需要内存空间来存放？</li>
+<li>这就是为什么JVM中必须划分出来不同的内存区域，它是为了我们写好的代码在运行过程中根据需要来使用的。<br><img src="https://mubu.com/document_image/b7b54e87-506a-46e1-bede-55845919dc71-4276170.jpg" alt="avatar"><h4 id="存放类的方法区"><a href="#存放类的方法区" class="headerlink" title="存放类的方法区"></a>存放类的方法区</h4></li>
+<li>主要是放从“.class”文件里加载进来的类，还会有一些类似常量池的东西放在这个区域里。<h4 id="执行代码指令用的程序计数器"><a href="#执行代码指令用的程序计数器" class="headerlink" title="执行代码指令用的程序计数器"></a>执行代码指令用的程序计数器</h4></li>
+<li>我们写好的Java代码（.java）会被翻译成字节码(.class)，对应各种字节码指令</li>
+<li>字节码指令一定会被一条一条执行，这样才能实现我们写好的代码执行的效果</li>
+<li>那么在执行字节码指令的时候，JVM里就需要一个特殊的内存区域了，那就是“程序计数器”</li>
+<li>大家都知道JVM是支持多个线程的，所以其实你写好的代码可能会开启多个线程并发执行不同的代码，所以就会有多个线程来并发的执行不同的代码指令</li>
+<li>因此每个线程都会有自己的一个程序计数器，专门记录当前这个线程目前执行到了哪一条字节码指令了<br><img src="https://mubu.com/document_image/91747429-c1c5-4fe2-95b7-6b8ae9d04571-4276170.jpg" alt="avatar"><h4 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h4></li>
+<li>因此，JVM必须有一块区域是来保存每个方法内的局部变量等数据的，这个区域就是Java虚拟机栈</li>
+<li>每个线程都有自己的Java虚拟机栈</li>
+<li>在栈帧里存放了这个方法对应的局部变量之类的数据，包括这个方法执行的其他相关的信息，方法执行完毕之后就出栈。<br><img src="https://mubu.com/document_image/9f97e9a9-24b1-4944-a4af-8fc8e34e8ab6-4276170.jpg" alt="avatar"></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%B8%80)%EF%BC%9AJava%E4%BB%A3%E7%A0%81%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E8%B5%B7%E6%9D%A5%E7%9A%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -253,7 +703,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL%E6%B3%A8%E6%84%8F%E7%82%B9/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -267,7 +717,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2015/01/19/MySQL/MySQL%E6%B3%A8%E6%84%8F%E7%82%B9/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
+            <a href="/2015/01/19/JVM/JVM%E7%B3%BB%E5%88%97(%E4%BA%8C)%EF%BC%9AJVM%20%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">JVM系列(二)：JVM 类加载机制</a>
         </h1>
 
         <div class="post-meta">
@@ -285,8 +735,8 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
                   </a>
                 </span>
             </span>
@@ -302,101 +752,49 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <ul>
-<li>慢查询<ul>
-<li>my.cnf配置<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 打开慢查询日志</span><br><span class="line">slow_query_log=1</span><br><span class="line"># 慢查询日志存储路径</span><br><span class="line">slow_query_log_file=/var/log/mysql/log-slow-queries.log</span><br><span class="line"># SQL执行时间大于3秒，则记录日志</span><br><span class="line">long_query_time=3</span><br></pre></td></tr></table></figure>
-</li>
+          <h4 id="JVM在什么情况下会加载一个类？"><a href="#JVM在什么情况下会加载一个类？" class="headerlink" title="JVM在什么情况下会加载一个类？"></a>JVM在什么情况下会加载一个类？</h4><ul>
+<li>代码使用到这个类的时候才会把类加载到JVM内存中，一个类从加载到使用，经历过程：加载 -&gt; 验证 -&gt; 准备 -&gt; 解析 -&gt; 初始化 -&gt; 使用 -&gt; 卸载<h4 id="从实用角度出发，来看看验证、准备和初始化的过程"><a href="#从实用角度出发，来看看验证、准备和初始化的过程" class="headerlink" title="从实用角度出发，来看看验证、准备和初始化的过程"></a>从实用角度出发，来看看验证、准备和初始化的过程</h4></li>
+<li>验证：简单来说，这一步就是根据Java虚拟机规范，来校验加载进来的“.class”文件中的内容，是否符合指定的规范。</li>
+<li>准备：<ul>
+<li>假设你有这么一个“ReplicaManager”类，他的“ReplicaManager.class”文件内容刚刚被加载到内存之后，会进行验证，确认这个字节码文件的内容是规范的。</li>
+<li>这个准备工作，其实就是给这个“ReplicaManager”类分配一定的内存空间。然后给他里面的类变量（也就是static修饰的变量）分配内存空间，来一个默认的初始值。</li>
+<li>解析：符号引用替换为直接引用，内容很复杂，涉及JVM底层</li>
 </ul>
 </li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/19/MySQL/MySQL%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="刘勇">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LY Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/01/19/MySQL/MySQL%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="post-title-link" itemprop="url">MySQL系列(一)：</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-01-19 00:34:14" itemprop="dateCreated datePublished" datetime="2015-01-19T00:34:14+08:00">2015-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p>数据类型</p>
+<h4 id="核心阶段：初始化"><a href="#核心阶段：初始化" class="headerlink" title="核心阶段：初始化"></a>核心阶段：初始化</h4><ul>
+<li>什么时候会初始化一个类？<ul>
+<li>一般来说有以下一些时机：比如“new ReplicaManager()”来实例化类的对象了，此时就会触发类的加载到初始化的全过程，把这个类准备好，然后再实例化一个对象出来。或者是包含“main()”方法的主类，必须是立马初始化的。</li>
+<li>此外，这里还有一个非常重要的规则，就是如果初始化一个类的时候，发现他的父类还没初始化，那么必须先初始化他的父类。</li>
+</ul>
+</li>
+</ul>
+<h4 id="类加载器和双亲委派机制"><a href="#类加载器和双亲委派机制" class="headerlink" title="类加载器和双亲委派机制"></a>类加载器和双亲委派机制</h4><ul>
+<li><p>类加载器</p>
 <ul>
-<li><p>整数类型：bit、bool、tinyint、smallint、mediumint、int、bigint<br><img src="https://s2.ax1x.com/2019/11/22/MHpjMT.png" alt="avatar"></p>
-</li>
-<li><p>浮点数类型：float、double、decimal</p>
-</li>
-<li><p>字符串类型：char、varchar、tinyblob、blob、mediumblob、longblob、tinytext、text、mediumtext、longtext</p>
-</li>
-<li><p>日期类型：Date、DateTime、TimeStamp、Time、Year</p>
-</li>
+<li>启动类加载器：Bootstrap ClassLoader，他主要是负责加载我们在机器上安装的Java目录下的核心类的，所以一旦你的JVM启动，那么首先就会依托启动类加载器，去加载你的Java安装目录下的“lib”目录中的核心类库。</li>
 </ul>
 </li>
-<li><p>类型选择</p>
+<li><p>扩展类加载器</p>
 <ul>
-<li>选小不选大：一般情况下选择可以正确存储数据的最小数据类型，越小的数据类型通常更快，占用磁盘，内存和CPU缓存更小。</li>
-<li>简单就好：简单的数据类型的操作通常需要更少的CPU周期，例如：整型比字符操作代价要小得多，因为字符集和校对规则(排序规则)使字符比整型比较更加复杂。</li>
-<li>尽量避免NULL：尽量制定列为NOT NULL，除非真的需要NULL类型的值，有NULL的列值会使得索引、索引统计和值比较更加复杂。</li>
-<li>浮点类型的建议统一选择decimal</li>
-<li>记录时间的建议使用int或者bigint类型，将时间转换为时间戳格式，如将时间转换为秒、毫秒，进行存储，方便走索引</li>
+<li>这个类加载器其实也是类似的，就是你的Java安装目录下，有一个“lib\ext”目录</li>
+</ul>
+</li>
+<li><p>应用程序类加载器</p>
+<ul>
+<li>其实你大致就理解为去加载你写好的Java代码吧，这个类加载器就负责加载你写好的那些类到内存里。</li>
+</ul>
+</li>
+<li><p>自定义类加载器</p>
+<ul>
+<li>根据自己的需求加载类</li>
+</ul>
+</li>
+<li><p>双亲委派机制</p>
+<ul>
+<li>JVM的类加载器是有亲子层级结构的，就是说启动类加载器是最上层的，扩展类加载器在第二层，第三层是应用程序类加载器，最后一层是自定义类加载器。基于亲子层级结构，就有一个双亲委派的机制</li>
+<li>应用程序类加载器在自己负责的范围内，比如就是你写好的那个系统打包成的jar包吧，一下子发现，就在这里！然后就自己把这个类加载到内存里去了。</li>
+<li>先找父亲去加载，不行的话再由儿子来加载。（双亲委派机制）</li>
 </ul>
 </li>
 </ul>
@@ -672,7 +1070,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
